@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdint>
-#include "src/ale_interface.hpp"
+#include "./lib/ale/src/ale_interface.hpp"
 
 // Constants
 constexpr uint32_t maxSteps = 7500;
