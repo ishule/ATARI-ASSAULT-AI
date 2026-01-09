@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <stdexcept>
 
 using VecDouble_t = std::vector<double>;
 using MatDouble_t = std::vector<std::vector<double>>;

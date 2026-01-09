@@ -1,0 +1,7 @@
+
+Iris: https://www.kaggle.com/datasets/uciml/iris?resource=download
+Breast Cancer: https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data
+Wine: https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009
+
+MNIST:https://www.kaggle.com/competitions/digit-recognizer/data?select=train.csv
+
