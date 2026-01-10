@@ -19,3 +19,13 @@ dist/
 build/
 *.log
 .env
+
+# Ignore ALE build artifacts
+lib/ale/*
+CMakeCache.txt
+CMakeFiles/
+Makefile
+ale.pc
+cmake_install.cmake
+cmake_uninstall.cmake
+agent
