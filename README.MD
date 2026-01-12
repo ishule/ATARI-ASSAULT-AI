@@ -19,3 +19,27 @@ LD_LIBRARY_PATH=. ./agent ./supported/assault.bin
 
 ## Nota
 Debes crear la carpeta `build` siguiendo las instrucciones proporcionadas en el video mencionado.
+
+# Atari Assault AI: Infraestructura de Datos
+
+Este proyecto implementa algoritmos de aprendizaje automático para Atari Assault utilizando la Arcade Learning Environment (ALE).
+
+## 🚀 Cómo usar
+
+### 1. Recolección de datos
+
+Compila el **Agent Manual**:
+```bash
+make
+./bin/AgentManual <rom_file>
+```
+
+Esto generará un archivo `data_manual.csv` con los estados de la RAM y las acciones tomadas durante el juego.
+
+### 2. Procesamiento de datos
+
+Usa las clases de utilidades:
+- `Data.hpp`: Para leer y dividir datos.
+- `Normalize.hpp`: Para normalizar las entradas.
+
+¡Listo para que tu equipo siga con el desarrollo del Perceptrón y Red Neuronal!
