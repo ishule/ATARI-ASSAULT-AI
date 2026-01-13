@@ -3,247 +3,64 @@
 ================================================
 DATASET: iris
 Train: 105 | Val: 22 | Test: 23
-Input Features: 4 | Output Classes: 3
+Input: 4 | Output: 3
 ================================================
 
-===== FASE 1: Forward Propagation Only =====
+===== FASE 1: Forward Propagation (sin entrenar) =====
 
-Exp 1 | 4-10-3- | SIGMOID
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
+Exp 1 | 4-20-3- | Forward Only (pesos aleatorios)
+  Train: 39.05% | Val: 27.27% | Test: 13.04%
 
-Exp 2 | 4-10-3- | TANH
-  Train: 6.67% | Val: 0.00% | Test: 17.39%
 
-Exp 3 | 4-10-3- | RELU
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
+===== FASE 2: Backpropagation =====
 
-Exp 4 | 4-10-3- | LEAKY_RELU
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
+Exp 2 | 4-20-3- | Backpropagation
+  Train: 97.14% | Val: 100.00% | Test: 100.00%
 
-Exp 5 | 4-20-3- | SIGMOID
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
+Exp 3 | 4-50-20-3- | Backpropagation
+  Train: 93.33% | Val: 100.00% | Test: 95.65%
 
-Exp 6 | 4-20-3- | TANH
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
+Exp 4 | 4-100-50-3- | Backpropagation
+  Train: 93.33% | Val: 100.00% | Test: 95.65%
 
-Exp 7 | 4-20-3- | RELU
-  Train: 16.19% | Val: 0.00% | Test: 13.04%
 
-Exp 8 | 4-20-3- | LEAKY_RELU
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
+===== FASE 3: Regularización (Dropout) =====
 
-Exp 9 | 4-50-3- | SIGMOID
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
+Exp 5 | Dropout=0.30
+  Train: 81.90% | Val: 81.82% | Test: 95.65%
 
-Exp 10 | 4-50-3- | TANH
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
+Exp 6 | Dropout=0.50
+  Train: 66.67% | Val: 63.64% | Test: 69.57%
 
-Exp 11 | 4-50-3- | RELU
-  Train: 35.24% | Val: 22.73% | Test: 34.78%
 
-Exp 12 | 4-50-3- | LEAKY_RELU
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
+===== FASE 4: Regularización (L2) =====
 
-Exp 13 | 4-10-10-3- | SIGMOID
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
+Exp 7 | L2 lambda=0.01
+  Train: 94.29% | Val: 100.00% | Test: 100.00%
 
-Exp 14 | 4-10-10-3- | TANH
-  Train: 28.57% | Val: 27.27% | Test: 21.74%
+Exp 8 | L2 lambda=0.10
+  Train: 85.71% | Val: 86.36% | Test: 100.00%
 
-Exp 15 | 4-10-10-3- | RELU
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
 
-Exp 16 | 4-10-10-3- | LEAKY_RELU
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
+===== FASE 5: Early Stopping =====
 
-Exp 17 | 4-20-10-3- | SIGMOID
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
+Exp 9 | Early Stopping (stopped at epoch 149)
+  Train: 97.14% | Val: 100.00% | Test: 100.00%
 
-Exp 18 | 4-20-10-3- | TANH
-  Train: 35.24% | Val: 22.73% | Test: 34.78%
-
-Exp 19 | 4-20-10-3- | RELU
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
-
-Exp 20 | 4-20-10-3- | LEAKY_RELU
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
-
-Exp 21 | 4-50-20-3- | SIGMOID
-  Train: 35.24% | Val: 22.73% | Test: 34.78%
-
-Exp 22 | 4-50-20-3- | TANH
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
-
-Exp 23 | 4-50-20-3- | RELU
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
-
-Exp 24 | 4-50-20-3- | LEAKY_RELU
-  Train: 35.24% | Val: 22.73% | Test: 34.78%
-
-Exp 25 | 4-100-50-3- | SIGMOID
-  Train: 35.24% | Val: 22.73% | Test: 34.78%
-
-Exp 26 | 4-100-50-3- | TANH
-  Train: 35.24% | Val: 22.73% | Test: 34.78%
-
-Exp 27 | 4-100-50-3- | RELU
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
-
-Exp 28 | 4-100-50-3- | LEAKY_RELU
-  Train: 30.48% | Val: 45.45% | Test: 34.78%
-
-
-===== FASE 2: Con Backpropagation =====
-
-Exp 29 | 4-10-3- | SIGMOID
-  Train: 76.19% | Val: 81.82% | Test: 82.61%
-
-Exp 30 | 4-10-3- | TANH
-  Train: 98.10% | Val: 86.36% | Test: 95.65%
-
-Exp 31 | 4-10-3- | RELU
-  Train: 96.19% | Val: 81.82% | Test: 95.65%
-
-Exp 32 | 4-10-3- | LEAKY_RELU
-  Train: 92.38% | Val: 90.91% | Test: 91.30%
-
-Exp 33 | 4-20-3- | SIGMOID
-  Train: 67.62% | Val: 77.27% | Test: 69.57%
-
-Exp 34 | 4-20-3- | TANH
-  Train: 97.14% | Val: 86.36% | Test: 95.65%
-
-Exp 35 | 4-20-3- | RELU
-  Train: 98.10% | Val: 100.00% | Test: 95.65%
-
-Exp 36 | 4-20-3- | LEAKY_RELU
-  Train: 95.24% | Val: 90.91% | Test: 91.30%
-
-Exp 37 | 4-50-3- | SIGMOID
-  Train: 64.76% | Val: 77.27% | Test: 65.22%
-
-Exp 38 | 4-50-3- | TANH
-  Train: 97.14% | Val: 95.45% | Test: 95.65%
-
-Exp 39 | 4-50-3- | RELU
-  Train: 95.24% | Val: 100.00% | Test: 91.30%
-
-Exp 40 | 4-50-3- | LEAKY_RELU
-  Train: 96.19% | Val: 90.91% | Test: 91.30%
-
-Exp 41 | 4-10-10-3- | SIGMOID
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
-
-Exp 42 | 4-10-10-3- | TANH
-  Train: 99.05% | Val: 90.91% | Test: 91.30%
-
-Exp 43 | 4-10-10-3- | RELU
-  Train: 97.14% | Val: 95.45% | Test: 91.30%
-
-Exp 44 | 4-10-10-3- | LEAKY_RELU
-  Train: 89.52% | Val: 90.91% | Test: 91.30%
-
-Exp 45 | 4-20-10-3- | SIGMOID
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
-
-Exp 46 | 4-20-10-3- | TANH
-  Train: 94.29% | Val: 90.91% | Test: 95.65%
-
-Exp 47 | 4-20-10-3- | RELU
-  Train: 96.19% | Val: 90.91% | Test: 91.30%
-
-Exp 48 | 4-20-10-3- | LEAKY_RELU
-  Train: 78.10% | Val: 72.73% | Test: 82.61%
-
-Exp 49 | 4-50-20-3- | SIGMOID
-  Train: 34.29% | Val: 31.82% | Test: 30.43%
-
-Exp 50 | 4-50-20-3- | TANH
-  Train: 97.14% | Val: 100.00% | Test: 91.30%
-
-Exp 51 | 4-50-20-3- | RELU
-  Train: 96.19% | Val: 95.45% | Test: 91.30%
-
-Exp 52 | 4-50-20-3- | LEAKY_RELU
-  Train: 97.14% | Val: 90.91% | Test: 91.30%
-
-Exp 53 | 4-100-50-3- | SIGMOID
-  Train: 62.86% | Val: 68.18% | Test: 65.22%
-
-Exp 54 | 4-100-50-3- | TANH
-  Train: 99.05% | Val: 100.00% | Test: 91.30%
-
-Exp 55 | 4-100-50-3- | RELU
-  Train: 95.24% | Val: 100.00% | Test: 91.30%
-
-Exp 56 | 4-100-50-3- | LEAKY_RELU
-  Train: 98.10% | Val: 100.00% | Test: 95.65%
-
-
-===== FASE 3: Con Regularización (Dropout) =====
-
-Exp 57 | Dropout=0.20
-  Train: 97.14% | Val: 95.45% | Test: 95.65%
-
-Exp 58 | Dropout=0.30
-  Train: 95.24% | Val: 95.45% | Test: 91.30%
-
-Exp 59 | Dropout=0.50
-  Train: 96.19% | Val: 81.82% | Test: 91.30%
-
-Exp 60 | Dropout=0.20
-  Train: 99.05% | Val: 90.91% | Test: 95.65%
-
-Exp 61 | Dropout=0.30
-  Train: 98.10% | Val: 90.91% | Test: 95.65%
-
-Exp 62 | Dropout=0.50
-  Train: 99.05% | Val: 86.36% | Test: 95.65%
-
-
-===== FASE 4: Con L2 Regularization =====
-
-Exp 63 | L2 lambda=0.00
-  Train: 97.14% | Val: 95.45% | Test: 95.65%
-
-Exp 64 | L2 lambda=0.01
-  Train: 98.10% | Val: 86.36% | Test: 95.65%
-
-Exp 65 | L2 lambda=0.10
-  Train: 98.10% | Val: 90.91% | Test: 95.65%
-
-Exp 66 | L2 lambda=0.00
-  Train: 97.14% | Val: 81.82% | Test: 95.65%
-
-Exp 67 | L2 lambda=0.01
-  Train: 94.29% | Val: 90.91% | Test: 91.30%
-
-Exp 68 | L2 lambda=0.10
-  Train: 99.05% | Val: 95.45% | Test: 95.65%
-
-
-===== FASE 5: Con Early Stopping =====
-
-Exp 69 | Early Stopping (stopped at epoch 150)
-  Train: 94.29% | Val: 95.45% | Test: 91.30%
-
-Exp 70 | Early Stopping (stopped at epoch 150)
-  Train: 98.10% | Val: 95.45% | Test: 100.00%
-
-Exp 71 | Early Stopping (stopped at epoch 148)
-  Train: 97.14% | Val: 100.00% | Test: 95.65%
+Exp 10 | Early Stopping (stopped at epoch 150)
+  Train: 93.33% | Val: 100.00% | Test: 95.65%
 
 
 ========================================
 MEJOR MODELO PARA iris
 ========================================
-Experimento: 70
+Experimento: 2
 Arquitectura: 4-20-3
 Activación: RELU
-Fase: earlystop
-Archivo: models/mlp/iris_exp70_4-20-3_RELU_earlystop.txt
-Train Accuracy: 98.10%
-Val Accuracy: 95.45%
+Fase: backprop
+Archivo: models/mlp/iris_exp2_4-20-3_RELU_backprop.txt
+Train Accuracy: 97.14%
+Val Accuracy: 100.00%
 Test Accuracy: 100.00%
 
 
@@ -251,494 +68,128 @@ Test Accuracy: 100.00%
 ================================================
 DATASET: cancer
 Train: 398 | Val: 85 | Test: 86
-Input Features: 30 | Output Classes: 1
+Input: 30 | Output: 1
 ================================================
 
-===== FASE 1: Forward Propagation Only =====
+===== FASE 1: Forward Propagation (sin entrenar) =====
 
-Exp 1 | 30-10-1- | SIGMOID
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
+Exp 1 | 30-20-1- | Forward Only (pesos aleatorios)
+  Train: 50.00% | Val: 55.29% | Test: 47.67%
 
-Exp 2 | 30-10-1- | TANH
-  Train: 62.06% | Val: 64.71% | Test: 65.12%
 
-Exp 3 | 30-10-1- | RELU
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+===== FASE 2: Backpropagation =====
 
-Exp 4 | 30-10-1- | LEAKY_RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
+Exp 2 | 30-20-1- | Backpropagation
+  Train: 98.24% | Val: 96.47% | Test: 96.51%
 
-Exp 5 | 30-20-1- | SIGMOID
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+Exp 3 | 30-50-20-1- | Backpropagation
+  Train: 98.24% | Val: 97.65% | Test: 94.19%
 
-Exp 6 | 30-20-1- | TANH
-  Train: 63.07% | Val: 64.71% | Test: 66.28%
+Exp 4 | 30-100-50-1- | Backpropagation
+  Train: 98.49% | Val: 95.29% | Test: 94.19%
 
-Exp 7 | 30-20-1- | RELU
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
 
-Exp 8 | 30-20-1- | LEAKY_RELU
-  Train: 45.98% | Val: 41.18% | Test: 37.21%
+===== FASE 3: Regularización (Dropout) =====
 
-Exp 9 | 30-50-1- | SIGMOID
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+Exp 5 | Dropout=0.30
+  Train: 97.99% | Val: 96.47% | Test: 95.35%
 
-Exp 10 | 30-50-1- | TANH
-  Train: 26.63% | Val: 24.71% | Test: 23.26%
+Exp 6 | Dropout=0.50
+  Train: 96.98% | Val: 96.47% | Test: 96.51%
 
-Exp 11 | 30-50-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
 
-Exp 12 | 30-50-1- | LEAKY_RELU
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+===== FASE 4: Regularización (L2) =====
 
-Exp 13 | 30-10-10-1- | SIGMOID
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+Exp 7 | L2 lambda=0.01
+  Train: 98.49% | Val: 98.82% | Test: 96.51%
 
-Exp 14 | 30-10-10-1- | TANH
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+Exp 8 | L2 lambda=0.10
+  Train: 97.49% | Val: 96.47% | Test: 96.51%
 
-Exp 15 | 30-10-10-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
 
-Exp 16 | 30-10-10-1- | LEAKY_RELU
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+===== FASE 5: Early Stopping =====
 
-Exp 17 | 30-20-10-1- | SIGMOID
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
+Exp 9 | Early Stopping (stopped at epoch 129)
+  Train: 98.24% | Val: 98.82% | Test: 95.35%
 
-Exp 18 | 30-20-10-1- | TANH
-  Train: 65.58% | Val: 65.88% | Test: 67.44%
-
-Exp 19 | 30-20-10-1- | RELU
-  Train: 17.09% | Val: 23.53% | Test: 16.28%
-
-Exp 20 | 30-20-10-1- | LEAKY_RELU
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
-
-Exp 21 | 30-50-20-1- | SIGMOID
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 22 | 30-50-20-1- | TANH
-  Train: 63.82% | Val: 67.06% | Test: 67.44%
-
-Exp 23 | 30-50-20-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 24 | 30-50-20-1- | LEAKY_RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 25 | 30-100-50-1- | SIGMOID
-  Train: 38.19% | Val: 35.29% | Test: 34.88%
-
-Exp 26 | 30-100-50-1- | TANH
-  Train: 73.62% | Val: 68.24% | Test: 74.42%
-
-Exp 27 | 30-100-50-1- | RELU
-  Train: 36.93% | Val: 35.29% | Test: 32.56%
-
-Exp 28 | 30-100-50-1- | LEAKY_RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-
-===== FASE 2: Con Backpropagation =====
-
-Exp 29 | 30-10-1- | SIGMOID
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 30 | 30-10-1- | TANH
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 31 | 30-10-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 32 | 30-10-1- | LEAKY_RELU
-  Train: 92.21% | Val: 90.59% | Test: 91.86%
-
-Exp 33 | 30-20-1- | SIGMOID
-  Train: 62.06% | Val: 64.71% | Test: 65.12%
-
-Exp 34 | 30-20-1- | TANH
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 35 | 30-20-1- | RELU
-  Train: 62.31% | Val: 64.71% | Test: 65.12%
-
-Exp 36 | 30-20-1- | LEAKY_RELU
-  Train: 90.45% | Val: 87.06% | Test: 94.19%
-
-Exp 37 | 30-50-1- | SIGMOID
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 38 | 30-50-1- | TANH
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 39 | 30-50-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 40 | 30-50-1- | LEAKY_RELU
-  Train: 88.94% | Val: 84.71% | Test: 93.02%
-
-Exp 41 | 30-10-10-1- | SIGMOID
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 42 | 30-10-10-1- | TANH
-  Train: 62.06% | Val: 64.71% | Test: 65.12%
-
-Exp 43 | 30-10-10-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 44 | 30-10-10-1- | LEAKY_RELU
-  Train: 88.69% | Val: 85.88% | Test: 93.02%
-
-Exp 45 | 30-20-10-1- | SIGMOID
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 46 | 30-20-10-1- | TANH
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 47 | 30-20-10-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 48 | 30-20-10-1- | LEAKY_RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 49 | 30-50-20-1- | SIGMOID
-  Train: 78.14% | Val: 77.65% | Test: 80.23%
-
-Exp 50 | 30-50-20-1- | TANH
-  Train: 62.06% | Val: 64.71% | Test: 65.12%
-
-Exp 51 | 30-50-20-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 52 | 30-50-20-1- | LEAKY_RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 53 | 30-100-50-1- | SIGMOID
-  Train: 90.20% | Val: 85.88% | Test: 95.35%
-
-Exp 54 | 30-100-50-1- | TANH
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 55 | 30-100-50-1- | RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 56 | 30-100-50-1- | LEAKY_RELU
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-
-===== FASE 3: Con Regularización (Dropout) =====
-
-Exp 57 | Dropout=0.20
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 58 | Dropout=0.30
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 59 | Dropout=0.50
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 60 | Dropout=0.20
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 61 | Dropout=0.30
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 62 | Dropout=0.50
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-
-===== FASE 4: Con L2 Regularization =====
-
-Exp 63 | L2 lambda=0.00
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 64 | L2 lambda=0.01
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 65 | L2 lambda=0.10
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 66 | L2 lambda=0.00
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 67 | L2 lambda=0.01
-  Train: 62.06% | Val: 64.71% | Test: 65.12%
-
-Exp 68 | L2 lambda=0.10
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-
-===== FASE 5: Con Early Stopping =====
-
-Exp 69 | Early Stopping (stopped at epoch 58)
-  Train: 61.81% | Val: 64.71% | Test: 65.12%
-
-Exp 70 | Early Stopping (stopped at epoch 56)
-  Train: 62.31% | Val: 64.71% | Test: 65.12%
-
-Exp 71 | Early Stopping (stopped at epoch 60)
-  Train: 62.31% | Val: 64.71% | Test: 65.12%
+Exp 10 | Early Stopping (stopped at epoch 147)
+  Train: 98.74% | Val: 95.29% | Test: 95.35%
 
 
 ========================================
 MEJOR MODELO PARA cancer
 ========================================
-Experimento: 53
-Arquitectura: 30-100-50-1
-Activación: SIGMOID
+Experimento: 2
+Arquitectura: 30-20-1
+Activación: RELU
 Fase: backprop
-Archivo: models/mlp/cancer_exp53_30-100-50-1_SIGMOID_backprop.txt
-Train Accuracy: 90.20%
-Val Accuracy: 85.88%
-Test Accuracy: 95.35%
+Archivo: models/mlp/cancer_exp2_30-20-1_RELU_backprop.txt
+Train Accuracy: 98.24%
+Val Accuracy: 96.47%
+Test Accuracy: 96.51%
 
 
 
 ================================================
 DATASET: wine
 Train: 1119 | Val: 239 | Test: 241
-Input Features: 11 | Output Classes: 1
+Input: 11 | Output: 1
 ================================================
 
-===== FASE 1: Forward Propagation Only =====
+===== FASE 1: Forward Propagation (sin entrenar) =====
 
-Exp 1 | 11-10-1- | SIGMOID
-  Train: 90.97% | Val: 90.38% | Test: 92.53%
+Exp 1 | 11-20-1- | Forward Only (pesos aleatorios)
+  Train: 38.16% | Val: 38.08% | Test: 43.15%
 
-Exp 2 | 11-10-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
 
-Exp 3 | 11-10-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+===== FASE 2: Backpropagation =====
 
-Exp 4 | 11-10-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+Exp 2 | 11-20-1- | Backpropagation
+  Train: 75.16% | Val: 76.57% | Test: 71.78%
 
-Exp 5 | 11-20-1- | SIGMOID
-  Train: 95.62% | Val: 94.56% | Test: 97.93%
+Exp 3 | 11-50-20-1- | Backpropagation
+  Train: 77.66% | Val: 76.57% | Test: 73.44%
 
-Exp 6 | 11-20-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+Exp 4 | 11-100-50-1- | Backpropagation
+  Train: 78.11% | Val: 78.66% | Test: 73.03%
 
-Exp 7 | 11-20-1- | RELU
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
 
-Exp 8 | 11-20-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+===== FASE 3: Regularización (Dropout) =====
 
-Exp 9 | 11-50-1- | SIGMOID
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
+Exp 5 | Dropout=0.30
+  Train: 74.71% | Val: 76.57% | Test: 72.20%
 
-Exp 10 | 11-50-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+Exp 6 | Dropout=0.50
+  Train: 74.26% | Val: 74.90% | Test: 72.61%
 
-Exp 11 | 11-50-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
 
-Exp 12 | 11-50-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+===== FASE 4: Regularización (L2) =====
 
-Exp 13 | 11-10-10-1- | SIGMOID
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
+Exp 7 | L2 lambda=0.01
+  Train: 76.23% | Val: 76.57% | Test: 71.37%
 
-Exp 14 | 11-10-10-1- | TANH
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
+Exp 8 | L2 lambda=0.10
+  Train: 74.26% | Val: 76.57% | Test: 73.86%
 
-Exp 15 | 11-10-10-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
 
-Exp 16 | 11-10-10-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+===== FASE 5: Early Stopping =====
 
-Exp 17 | 11-20-10-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+Exp 9 | Early Stopping (stopped at epoch 148)
+  Train: 76.94% | Val: 78.24% | Test: 73.44%
 
-Exp 18 | 11-20-10-1- | TANH
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
-
-Exp 19 | 11-20-10-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 20 | 11-20-10-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 21 | 11-50-20-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 22 | 11-50-20-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 23 | 11-50-20-1- | RELU
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
-
-Exp 24 | 11-50-20-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 25 | 11-100-50-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 26 | 11-100-50-1- | TANH
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
-
-Exp 27 | 11-100-50-1- | RELU
-  Train: 3.84% | Val: 4.60% | Test: 1.66%
-
-Exp 28 | 11-100-50-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-
-===== FASE 2: Con Backpropagation =====
-
-Exp 29 | 11-10-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 30 | 11-10-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 31 | 11-10-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 32 | 11-10-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 33 | 11-20-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 34 | 11-20-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 35 | 11-20-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 36 | 11-20-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 37 | 11-50-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 38 | 11-50-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 39 | 11-50-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 40 | 11-50-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 41 | 11-10-10-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 42 | 11-10-10-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 43 | 11-10-10-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 44 | 11-10-10-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 45 | 11-20-10-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 46 | 11-20-10-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 47 | 11-20-10-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 48 | 11-20-10-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 49 | 11-50-20-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 50 | 11-50-20-1- | TANH
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 51 | 11-50-20-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 52 | 11-50-20-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 53 | 11-100-50-1- | SIGMOID
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 54 | 11-100-50-1- | TANH
-  Train: 96.25% | Val: 95.82% | Test: 98.76%
-
-Exp 55 | 11-100-50-1- | RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 56 | 11-100-50-1- | LEAKY_RELU
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-
-===== FASE 3: Con Regularización (Dropout) =====
-
-Exp 57 | Dropout=0.20
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 58 | Dropout=0.30
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 59 | Dropout=0.50
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 60 | Dropout=0.20
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 61 | Dropout=0.30
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 62 | Dropout=0.50
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-
-===== FASE 4: Con L2 Regularization =====
-
-Exp 63 | L2 lambda=0.00
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 64 | L2 lambda=0.01
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 65 | L2 lambda=0.10
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 66 | L2 lambda=0.00
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 67 | L2 lambda=0.01
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 68 | L2 lambda=0.10
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-
-===== FASE 5: Con Early Stopping =====
-
-Exp 69 | Early Stopping (stopped at epoch 1)
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 70 | Early Stopping (stopped at epoch 1)
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
-
-Exp 71 | Early Stopping (stopped at epoch 1)
-  Train: 96.16% | Val: 95.40% | Test: 98.34%
+Exp 10 | Early Stopping (stopped at epoch 81)
+  Train: 76.76% | Val: 76.99% | Test: 71.37%
 
 
 ========================================
 MEJOR MODELO PARA wine
 ========================================
-Experimento: 54
-Arquitectura: 11-100-50-1
-Activación: TANH
-Fase: backprop
-Archivo: models/mlp/wine_exp54_11-100-50-1_TANH_backprop.txt
-Train Accuracy: 96.25%
-Val Accuracy: 95.82%
-Test Accuracy: 98.76%
+Experimento: 8
+Arquitectura: 11-50-20-1
+Activación: RELU
+Fase: l2_0.1
+Archivo: models/mlp/wine_exp8_11-50-20-1_RELU_l2_0.1.txt
+Train Accuracy: 74.26%
+Val Accuracy: 76.57%
+Test Accuracy: 73.86%
 

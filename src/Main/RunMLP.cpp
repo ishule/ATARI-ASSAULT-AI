@@ -150,12 +150,56 @@ static Dataset loadCancer(const std::string& path, double trainRatio, double val
         }
     }
 
+    std::cout << "Cancer cargado: " << Xall.size() << " muestras\n";
+
+    // ============================================================
+    // NORMALIZACIÓN (z-score) - CRÍTICO PARA CANCER
+    // ============================================================
+    if (!Xall.empty()) {
+        const size_t numFeatures = 30;
+        std::vector<double> means(numFeatures, 0.0);
+        std::vector<double> stds(numFeatures, 0.0);
+        
+        // Calcular medias
+        for (const auto& sample : Xall) {
+            for (size_t j = 0; j < numFeatures; ++j) {
+                means[j] += sample[j];
+            }
+        }
+        for (auto& m : means) m /= Xall.size();
+        
+        // Calcular desviaciones estándar
+        for (const auto& sample : Xall) {
+            for (size_t j = 0; j < numFeatures; ++j) {
+                double diff = sample[j] - means[j];
+                stds[j] += diff * diff;
+            }
+        }
+        for (auto& s : stds) s = std::sqrt(s / Xall.size());
+        
+        // Normalizar (z-score)
+        for (auto& sample : Xall) {
+            for (size_t j = 0; j < numFeatures; ++j) {
+                if (stds[j] > 1e-8) {
+                    sample[j] = (sample[j] - means[j]) / stds[j];
+                }
+            }
+        }
+        
+        std::cout << "  Features normalizadas (z-score)\n";
+    }
+
     Dataset d;
     d.name = "cancer";
     d.inputSize = 30;
     d.outputSize = 1;
     shuffleSplit3(Xall, Yall, trainRatio, valRatio, 
                   d.Xtrain, d.Ytrain, d.Xval, d.Yval, d.Xtest, d.Ytest);
+    
+    std::cout << "  Split: Train=" << d.Xtrain.size() 
+              << " Val=" << d.Xval.size() 
+              << " Test=" << d.Xtest.size() << "\n\n";
+    
     return d;
 }
 
@@ -164,28 +208,85 @@ static Dataset loadWine(const std::string& path, double trainRatio, double valRa
     if (!file) throw std::runtime_error("No se pudo abrir " + path);
 
     std::string line;
-    std::getline(file, line);
+    std::getline(file, line);  // Skip header
+
+    // DEBUG: Ver header
+    std::cout << "Wine header: " << line.substr(0, 80) << "...\n";
 
     MatDouble_t Xall, Yall;
+    int countBad = 0, countGood = 0;
 
     while (std::getline(file, line)) {
+        if (line.empty()) continue;
+
         std::stringstream ss(line);
         std::string v;
         std::vector<double> row;
 
+        // Leer las 11 primeras columnas (features)
         for (int i = 0; i < 11; ++i) {
-            std::getline(ss, v, ';');
-            if (!v.empty()) row.push_back(std::stod(v));
+            if (!std::getline(ss, v, ',')) break;  // ← IMPORTANTE: coma, no punto y coma
+            row.push_back(std::stod(v));
         }
-        std::getline(ss, v, ';');
-        if (!v.empty()) {
-            double quality = (std::stod(v) >= 6) ? 1.0 : 0.0;
-            
-            if (row.size() == 11) {
-                Xall.push_back(row);
-                Yall.push_back({quality});
+
+        // Leer columna 12 (quality)
+        std::getline(ss, v, ',');
+        int quality = std::stoi(v);
+
+        // Clasificación binaria: good (>=6) vs bad (<6)
+        double label = (quality >= 6) ? 1.0 : 0.0;
+
+        if (label == 1.0) countGood++;
+        else countBad++;
+
+        if (row.size() == 11) {
+            Xall.push_back(row);
+            Yall.push_back({label});
+        }
+    }
+
+    file.close();
+
+    std::cout << "Wine cargado:\n";
+    std::cout << "  Total: " << Xall.size() << " muestras\n";
+    std::cout << "  Bad (quality<6): " << countBad << " (" << (100.0*countBad/Xall.size()) << "%)\n";
+    std::cout << "  Good (quality>=6): " << countGood << " (" << (100.0*countGood/Xall.size()) << "%)\n";
+
+    // ============================================================
+    // NORMALIZACIÓN (importante para Wine)
+    // ============================================================
+    if (!Xall.empty()) {
+        size_t numFeatures = Xall[0].size();
+        
+        // Calcular media y desviación estándar
+        std::vector<double> means(numFeatures, 0.0);
+        std::vector<double> stds(numFeatures, 0.0);
+        
+        for (const auto& sample : Xall) {
+            for (size_t j = 0; j < numFeatures; ++j) {
+                means[j] += sample[j];
             }
         }
+        for (auto& m : means) m /= Xall.size();
+        
+        for (const auto& sample : Xall) {
+            for (size_t j = 0; j < numFeatures; ++j) {
+                double diff = sample[j] - means[j];
+                stds[j] += diff * diff;
+            }
+        }
+        for (auto& s : stds) s = std::sqrt(s / Xall.size());
+        
+        // Normalizar (z-score)
+        for (auto& sample : Xall) {
+            for (size_t j = 0; j < numFeatures; ++j) {
+                if (stds[j] > 1e-8) {
+                    sample[j] = (sample[j] - means[j]) / stds[j];
+                }
+            }
+        }
+        
+        std::cout << "  Features normalizadas (z-score)\n";
     }
 
     Dataset d;
@@ -194,8 +295,14 @@ static Dataset loadWine(const std::string& path, double trainRatio, double valRa
     d.outputSize = 1;
     shuffleSplit3(Xall, Yall, trainRatio, valRatio, 
                   d.Xtrain, d.Ytrain, d.Xval, d.Yval, d.Xtest, d.Ytest);
+    
+    std::cout << "  Split: Train=" << d.Xtrain.size() 
+              << " Val=" << d.Xval.size() 
+              << " Test=" << d.Xtest.size() << "\n\n";
+    
     return d;
 }
+
 
 // ============================================================================
 // MNIST Dataset - IGUAL QUE EN RunPerceptron.cpp
@@ -385,279 +492,272 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
     results << "DATASET: " << dataset.name << "\n";
     results << "Train: " << dataset.Xtrain.size() << " | Val: " << dataset.Xval.size() 
             << " | Test: " << dataset.Xtest.size() << "\n";
-    results << "Input Features: " << dataset.inputSize << " | Output Classes: " << dataset.outputSize << "\n";
+    results << "Input: " << dataset.inputSize << " | Output: " << dataset.outputSize << "\n";
     results << "================================================\n\n";
     
-    // Arquitecturas específicas por dataset
+    // ========================================================================
+    // ARQUITECTURAS SIMPLIFICADAS
+    // ========================================================================
     std::vector<std::vector<int>> architectures;
     int maxEpochs = 100;
     
     if (datasetName == "mnist") {
-        // MNIST: redes más grandes
         architectures = {
-            {784, 128, 10},
-            {784, 256, 10},
-            {784, 512, 10},
-            {784, 256, 128, 10},
-            {784, 512, 256, 10}
+            {784, 128, 10},      // Pequeña
+            {784, 256, 128, 10}, // Mediana
+            {784, 512, 256, 10}  // Grande
         };
-        maxEpochs = 30;  // Menos épocas para MNIST (tarda más por muestra)
+        maxEpochs = 30;
     } else {
-        // Iris, Cancer, Wine: redes estándar
+        int in = static_cast<int>(dataset.inputSize);
+        int out = static_cast<int>(dataset.outputSize);
+        
         architectures = {
-            {static_cast<int>(dataset.inputSize), 10, static_cast<int>(dataset.outputSize)},
-            {static_cast<int>(dataset.inputSize), 20, static_cast<int>(dataset.outputSize)},
-            {static_cast<int>(dataset.inputSize), 50, static_cast<int>(dataset.outputSize)},
-            {static_cast<int>(dataset.inputSize), 10, 10, static_cast<int>(dataset.outputSize)},
-            {static_cast<int>(dataset.inputSize), 20, 10, static_cast<int>(dataset.outputSize)},
-            {static_cast<int>(dataset.inputSize), 50, 20, static_cast<int>(dataset.outputSize)},
-            {static_cast<int>(dataset.inputSize), 100, 50, static_cast<int>(dataset.outputSize)}
+            {in, 20, out},       // Pequeña
+            {in, 50, 20, out},   // Mediana
+            {in, 100, 50, out}   // Grande
         };
     }
     
-    std::vector<ActivationType> activations = {
-        ActivationType::SIGMOID,
-        ActivationType::TANH,
-        ActivationType::RELU,
-        ActivationType::LEAKY_RELU
-    };
+    // UNA SOLA ACTIVACIÓN NO LINEAL: RELU (la más usada actualmente)
+    ActivationType activation = ActivationType::RELU;
+    std::string actName = "RELU";
     
     int expNum = 0;
     BestModel bestModel;
     
     // ========================================================================
-    // FASE 1: Forward Propagation Only
+    // FASE 1: Forward Propagation Only (sin entrenamiento)
     // ========================================================================
-    results << "===== FASE 1: Forward Propagation Only =====\n\n";
+    results << "===== FASE 1: Forward Propagation (sin entrenar) =====\n\n";
     
-    for (auto& arch : architectures) {
-        for (auto& act : activations) {
-            expNum++;
-            std::string actName = ActivationFunctions::toString(act);
-            
-            std::cout << "\n[" << expNum << "] Testing: ";
-            for (int l : arch) std::cout << l << " ";
-            std::cout << "with " << actName << "\n";
-            
-            MLPConfig cfg;
-            cfg.layerSizes = arch;
-            cfg.activation = act;
-            cfg.maxEpochs = 0;
-            cfg.verbose = false;
-            
-            MLP* model = new MLP(cfg);
-            
-            double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-            double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-            double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
-            
-            if (testAcc > bestModel.testAcc) {
-                if (bestModel.model) delete bestModel.model;
-                bestModel.model = model;
-                bestModel.trainAcc = trainAcc;
-                bestModel.valAcc = valAcc;
-                bestModel.testAcc = testAcc;
-                bestModel.expNum = expNum;
-                bestModel.architecture = arch;
-                bestModel.activation = actName;
-                bestModel.phase = "forward";
-                bestModel.filename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
-            } else {
-                delete model;
-            }
-            
-            results << "Exp " << expNum << " | ";
-            for (int l : arch) results << l << "-";
-            results << " | " << actName << "\n";
-            results << "  Train: " << std::fixed << std::setprecision(2) << trainAcc << "% | ";
-            results << "Val: " << valAcc << "% | ";
-            results << "Test: " << testAcc << "%\n\n";
-        }
-    }
-    
-    // ========================================================================
-    // FASE 2: Con Backpropagation
-    // ========================================================================
-    results << "\n===== FASE 2: Con Backpropagation =====\n\n";
-    
-    for (auto& arch : architectures) {
-        for (auto& act : activations) {
-            expNum++;
-            std::string actName = ActivationFunctions::toString(act);
-            
-            std::cout << "\n[" << expNum << "] Training: ";
-            for (int l : arch) std::cout << l << " ";
-            std::cout << "with " << actName << "\n";
-            
-            MLPConfig cfg;
-            cfg.layerSizes = arch;
-            cfg.activation = act;
-            cfg.learningRate = 0.01;
-            cfg.maxEpochs = maxEpochs;
-            cfg.batchSize = 32;
-            cfg.verbose = true;
-            cfg.printEvery = (datasetName == "mnist") ? 2 : 10;
-            
-            MLP* model = new MLP(cfg);
-            model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
-            
-            double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-            double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-            double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
-            
-            if (testAcc > bestModel.testAcc) {
-                if (bestModel.model) delete bestModel.model;
-                bestModel.model = model;
-                bestModel.trainAcc = trainAcc;
-                bestModel.valAcc = valAcc;
-                bestModel.testAcc = testAcc;
-                bestModel.expNum = expNum;
-                bestModel.architecture = arch;
-                bestModel.activation = actName;
-                bestModel.phase = "backprop";
-                bestModel.filename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
-            } else {
-                delete model;
-            }
-            
-            results << "Exp " << expNum << " | ";
-            for (int l : arch) results << l << "-";
-            results << " | " << actName << "\n";
-            results << "  Train: " << trainAcc << "% | ";
-            results << "Val: " << valAcc << "% | ";
-            results << "Test: " << testAcc << "%\n\n";
-            
-            std::cout << "  Results: Train=" << trainAcc << "% Val=" << valAcc 
-                     << "% Test=" << testAcc << "%\n";
-        }
-    }
-    
-    // ========================================================================
-    // FASE 3: Con Dropout (solo 2 arquitecturas)
-    // ========================================================================
-    results << "\n===== FASE 3: Con Regularización (Dropout) =====\n\n";
-    
-    std::vector<double> dropoutRates = {0.2, 0.3, 0.5};
-    size_t numArchs = std::min(size_t(2), architectures.size());
-    
-    for (size_t i = 0; i < numArchs; ++i) {
-        auto& arch = architectures[i];
-        for (auto& rate : dropoutRates) {
-            expNum++;
-            std::cout << "\n[" << expNum << "] Training with Dropout=" << rate << "\n";
-            
-            MLPConfig cfg;
-            cfg.layerSizes = arch;
-            cfg.activation = ActivationType::RELU;
-            cfg.learningRate = 0.01;
-            cfg.maxEpochs = maxEpochs;
-            cfg.batchSize = 32;
-            cfg.useDropout = true;
-            cfg.dropoutRate = rate;
-            cfg.verbose = false;
-            
-            MLP* model = new MLP(cfg);
-            model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
-            
-            double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-            double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-            double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
-            
-            std::stringstream ss;
-            ss << "dropout" << std::fixed << std::setprecision(1) << rate;
-            
-            if (testAcc > bestModel.testAcc) {
-                if (bestModel.model) delete bestModel.model;
-                bestModel.model = model;
-                bestModel.trainAcc = trainAcc;
-                bestModel.valAcc = valAcc;
-                bestModel.testAcc = testAcc;
-                bestModel.expNum = expNum;
-                bestModel.architecture = arch;
-                bestModel.activation = "RELU";
-                bestModel.phase = ss.str();
-                bestModel.filename = generateModelFilename(dataset.name, arch, "RELU", ss.str(), expNum);
-            } else {
-                delete model;
-            }
-            
-            results << "Exp " << expNum << " | Dropout=" << rate << "\n";
-            results << "  Train: " << trainAcc << "% | ";
-            results << "Val: " << valAcc << "% | ";
-            results << "Test: " << testAcc << "%\n\n";
-        }
-    }
-    
-    // ========================================================================
-    // FASE 4: Con L2 Regularization
-    // ========================================================================
-    results << "\n===== FASE 4: Con L2 Regularization =====\n\n";
-    
-    std::vector<double> l2Lambdas = {0.001, 0.01, 0.1};
-    
-    for (size_t i = 0; i < numArchs; ++i) {
-        auto& arch = architectures[i];
-        for (auto& lambda : l2Lambdas) {
-            expNum++;
-            std::cout << "\n[" << expNum << "] Training with L2 lambda=" << lambda << "\n";
-            
-            MLPConfig cfg;
-            cfg.layerSizes = arch;
-            cfg.activation = ActivationType::RELU;
-            cfg.learningRate = 0.01;
-            cfg.maxEpochs = maxEpochs;
-            cfg.batchSize = 32;
-            cfg.useL2 = true;
-            cfg.l2Lambda = lambda;
-            cfg.verbose = false;
-            
-            MLP* model = new MLP(cfg);
-            model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
-            
-            double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-            double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-            double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
-            
-            std::stringstream ss;
-            ss << "l2_" << lambda;
-            
-            if (testAcc > bestModel.testAcc) {
-                if (bestModel.model) delete bestModel.model;
-                bestModel.model = model;
-                bestModel.trainAcc = trainAcc;
-                bestModel.valAcc = valAcc;
-                bestModel.testAcc = testAcc;
-                bestModel.expNum = expNum;
-                bestModel.architecture = arch;
-                bestModel.activation = "RELU";
-                bestModel.phase = ss.str();
-                bestModel.filename = generateModelFilename(dataset.name, arch, "RELU", ss.str(), expNum);
-            } else {
-                delete model;
-            }
-            
-            results << "Exp " << expNum << " | L2 lambda=" << lambda << "\n";
-            results << "  Train: " << trainAcc << "% | ";
-            results << "Val: " << valAcc << "% | ";
-            results << "Test: " << testAcc << "%\n\n";
-        }
-    }
-    
-    // ========================================================================
-    // FASE 5: Con Early Stopping (solo 3 arquitecturas)
-    // ========================================================================
-    results << "\n===== FASE 5: Con Early Stopping =====\n\n";
-    
-    for (size_t i = 0; i < std::min(size_t(3), architectures.size()); ++i) {
-        auto& arch = architectures[i];
+    // Solo probar 1 arquitectura para ver pesos aleatorios
+    {
         expNum++;
-        std::cout << "\n[" << expNum << "] Training with Early Stopping\n";
+        auto& arch = architectures[0];  // Arquitectura pequeña
+        
+        std::cout << "\n[" << expNum << "] Forward Only: ";
+        for (int l : arch) std::cout << l << " ";
+        std::cout << "\n";
         
         MLPConfig cfg;
         cfg.layerSizes = arch;
-        cfg.activation = ActivationType::RELU;
+        cfg.activation = activation;
+        cfg.maxEpochs = 0;
+        cfg.verbose = false;
+        
+        MLP* model = new MLP(cfg);
+        
+        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+        
+        if (testAcc > bestModel.testAcc) {
+            if (bestModel.model) delete bestModel.model;
+            bestModel.model = model;
+            bestModel.trainAcc = trainAcc;
+            bestModel.valAcc = valAcc;
+            bestModel.testAcc = testAcc;
+            bestModel.expNum = expNum;
+            bestModel.architecture = arch;
+            bestModel.activation = actName;
+            bestModel.phase = "forward";
+            bestModel.filename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
+        } else {
+            delete model;
+        }
+        
+        results << "Exp " << expNum << " | ";
+        for (int l : arch) results << l << "-";
+        results << " | Forward Only (pesos aleatorios)\n";
+        results << "  Train: " << std::fixed << std::setprecision(2) << trainAcc << "% | ";
+        results << "Val: " << valAcc << "% | ";
+        results << "Test: " << testAcc << "%\n\n";
+    }
+    
+    // ========================================================================
+    // FASE 2: Backpropagation (3 arquitecturas)
+    // ========================================================================
+    results << "\n===== FASE 2: Backpropagation =====\n\n";
+    
+    for (auto& arch : architectures) {
+        expNum++;
+        
+        std::cout << "\n[" << expNum << "] Training: ";
+        for (int l : arch) std::cout << l << " ";
+        std::cout << "\n";
+        
+        MLPConfig cfg;
+        cfg.layerSizes = arch;
+        cfg.activation = activation;
         cfg.learningRate = 0.01;
-        cfg.maxEpochs = 150;
+        cfg.maxEpochs = maxEpochs;
+        cfg.batchSize = 32;
+        cfg.verbose = true;
+        cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
+        
+        MLP* model = new MLP(cfg);
+        model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
+        
+        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+        
+        if (testAcc > bestModel.testAcc) {
+            if (bestModel.model) delete bestModel.model;
+            bestModel.model = model;
+            bestModel.trainAcc = trainAcc;
+            bestModel.valAcc = valAcc;
+            bestModel.testAcc = testAcc;
+            bestModel.expNum = expNum;
+            bestModel.architecture = arch;
+            bestModel.activation = actName;
+            bestModel.phase = "backprop";
+            bestModel.filename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
+        } else {
+            delete model;
+        }
+        
+        results << "Exp " << expNum << " | ";
+        for (int l : arch) results << l << "-";
+        results << " | Backpropagation\n";
+        results << "  Train: " << trainAcc << "% | ";
+        results << "Val: " << valAcc << "% | ";
+        results << "Test: " << testAcc << "%\n\n";
+        
+        std::cout << "  Results: Train=" << trainAcc << "% Val=" << valAcc 
+                  << "% Test=" << testAcc << "%\n";
+    }
+    
+    // ========================================================================
+    // FASE 3: Regularización con Dropout (1 arquitectura, 2 dropout rates)
+    // ========================================================================
+    results << "\n===== FASE 3: Regularización (Dropout) =====\n\n";
+    
+    auto& arch_reg = architectures[1];  // Arquitectura mediana
+    std::vector<double> dropoutRates = {0.3, 0.5};
+    
+    for (auto& rate : dropoutRates) {
+        expNum++;
+        
+        std::cout << "\n[" << expNum << "] Dropout=" << rate << ": ";
+        for (int l : arch_reg) std::cout << l << " ";
+        std::cout << "\n";
+        
+        MLPConfig cfg;
+        cfg.layerSizes = arch_reg;
+        cfg.activation = activation;
+        cfg.learningRate = 0.01;
+        cfg.maxEpochs = maxEpochs;
+        cfg.batchSize = 32;
+        cfg.useDropout = true;
+        cfg.dropoutRate = rate;
+        cfg.verbose = true;
+        cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
+        
+        MLP* model = new MLP(cfg);
+        model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
+        
+        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+        
+        std::stringstream ss;
+        ss << "dropout" << std::fixed << std::setprecision(1) << rate;
+        
+        if (testAcc > bestModel.testAcc) {
+            if (bestModel.model) delete bestModel.model;
+            bestModel.model = model;
+            bestModel.trainAcc = trainAcc;
+            bestModel.valAcc = valAcc;
+            bestModel.testAcc = testAcc;
+            bestModel.expNum = expNum;
+            bestModel.architecture = arch_reg;
+            bestModel.activation = actName;
+            bestModel.phase = ss.str();
+            bestModel.filename = generateModelFilename(dataset.name, arch_reg, actName, ss.str(), expNum);
+        } else {
+            delete model;
+        }
+        
+        results << "Exp " << expNum << " | Dropout=" << rate << "\n";
+        results << "  Train: " << trainAcc << "% | ";
+        results << "Val: " << valAcc << "% | ";
+        results << "Test: " << testAcc << "%\n\n";
+    }
+    
+    // ========================================================================
+    // FASE 4: Regularización L2 (1 arquitectura, 2 lambdas)
+    // ========================================================================
+    results << "\n===== FASE 4: Regularización (L2) =====\n\n";
+    
+    std::vector<double> l2Lambdas = {0.01, 0.1};
+    
+    for (auto& lambda : l2Lambdas) {
+        expNum++;
+        
+        std::cout << "\n[" << expNum << "] L2 lambda=" << lambda << "\n";
+        
+        MLPConfig cfg;
+        cfg.layerSizes = arch_reg;
+        cfg.activation = activation;
+        cfg.learningRate = 0.01;
+        cfg.maxEpochs = maxEpochs;
+        cfg.batchSize = 32;
+        cfg.useL2 = true;
+        cfg.l2Lambda = lambda;
+        cfg.verbose = true;
+        cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
+        
+        MLP* model = new MLP(cfg);
+        model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
+        
+        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+        
+        std::stringstream ss;
+        ss << "l2_" << lambda;
+        
+        if (testAcc > bestModel.testAcc) {
+            if (bestModel.model) delete bestModel.model;
+            bestModel.model = model;
+            bestModel.trainAcc = trainAcc;
+            bestModel.valAcc = valAcc;
+            bestModel.testAcc = testAcc;
+            bestModel.expNum = expNum;
+            bestModel.architecture = arch_reg;
+            bestModel.activation = actName;
+            bestModel.phase = ss.str();
+            bestModel.filename = generateModelFilename(dataset.name, arch_reg, actName, ss.str(), expNum);
+        } else {
+            delete model;
+        }
+        
+        results << "Exp " << expNum << " | L2 lambda=" << lambda << "\n";
+        results << "  Train: " << trainAcc << "% | ";
+        results << "Val: " << valAcc << "% | ";
+        results << "Test: " << testAcc << "%\n\n";
+    }
+    
+    // ========================================================================
+    // FASE 5: Early Stopping (2 arquitecturas)
+    // ========================================================================
+    results << "\n===== FASE 5: Early Stopping =====\n\n";
+    
+    for (size_t i = 0; i < 2; ++i) {  // Pequeña y mediana
+        auto& arch = architectures[i];
+        expNum++;
+        
+        std::cout << "\n[" << expNum << "] Early Stopping: ";
+        for (int l : arch) std::cout << l << " ";
+        std::cout << "\n";
+        
+        MLPConfig cfg;
+        cfg.layerSizes = arch;
+        cfg.activation = activation;
+        cfg.learningRate = 0.01;
+        cfg.maxEpochs = 150;  // Más épocas para ver el early stopping
         cfg.batchSize = 32;
         cfg.useEarlyStopping = true;
         cfg.patience = 15;
@@ -680,9 +780,9 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
             bestModel.testAcc = testAcc;
             bestModel.expNum = expNum;
             bestModel.architecture = arch;
-            bestModel.activation = "RELU";
+            bestModel.activation = actName;
             bestModel.phase = "earlystop";
-            bestModel.filename = generateModelFilename(dataset.name, arch, "RELU", "earlystop", expNum);
+            bestModel.filename = generateModelFilename(dataset.name, arch, actName, "earlystop", expNum);
         } else {
             delete model;
         }

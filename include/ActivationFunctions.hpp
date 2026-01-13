@@ -12,8 +12,6 @@ enum class ActivationType {
     SIGMOID,
     TANH,
     RELU,
-    LEAKY_RELU,
-    LINEAR,
     SOFTMAX
 };
 

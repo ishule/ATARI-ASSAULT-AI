@@ -20,7 +20,9 @@ BIN_DIR = bin
 
 # Archivos fuente para cada ejecutable
 AGENT_MANUAL_SRCS = $(MAIN_DIR)/AgentManual.cpp $(UTILS_DIR)/Balance.cpp $(UTILS_DIR)/Data.cpp $(UTILS_DIR)/Normalize.cpp
-RUN_MLP_SRCS = $(MAIN_DIR)/RunMLP.cpp $(UTILS_DIR)/Balance.cpp $(UTILS_DIR)/Data.cpp $(UTILS_DIR)/Normalize.cpp src/ActivationFunctions.cpp src/MLP.cpp
+RUN_MLP_SRCS = $(MAIN_DIR)/RunMLP.cpp \
+               $(SRC_DIR)/ActivationFunctions.cpp \
+               $(SRC_DIR)/MLP.cpp
 RUN_PERCEPTRON_SRCS = $(MAIN_DIR)/RunPerceptron.cpp $(UTILS_DIR)/Balance.cpp $(UTILS_DIR)/Data.cpp $(UTILS_DIR)/Normalize.cpp src/Perceptron.cpp
 
 # Ejecutables generados
@@ -49,3 +51,9 @@ $(RUN_PERCEPTRON_EXE): $(RUN_PERCEPTRON_SRCS)
 # Regla para limpiar los archivos generados
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
+
+AgentManual: $(AGENT_MANUAL_EXE)
+
+RunMLP: $(RUN_MLP_EXE)
+
+RunPerceptron: $(RUN_PERCEPTRON_EXE)

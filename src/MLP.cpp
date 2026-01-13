@@ -219,19 +219,29 @@ void MLP::applyL2Regularization(std::vector<MatDouble_t>& weightGrads) {
     }
 }
 
+// En MLP.cpp - función updateWeights()
 void MLP::updateWeights(const std::vector<MatDouble_t>& weightGrads,
                        const std::vector<VecDouble_t>& biasGrads,
                        size_t batchSize) {
-    double lr = config.learningRate / batchSize;
+    
+    double lr = config.learningRate;
     
     for (size_t layer = 0; layer < weights.size(); ++layer) {
-        // Actualizar pesos
-        for (size_t j = 0; j < weights[layer].size(); ++j) {
-            for (size_t k = 0; k < weights[layer][j].size(); ++k) {
-                weights[layer][j][k] -= lr * weightGrads[layer][j][k];
+        for (size_t i = 0; i < weights[layer].size(); ++i) {
+            for (size_t j = 0; j < weights[layer][i].size(); ++j) {
+                double gradient = weightGrads[layer][i][j] / batchSize;
+                
+                // Añadir L2 regularization
+                if (config.useL2) {
+                    gradient += config.l2Lambda * weights[layer][i][j];
+                }
+                
+                weights[layer][i][j] -= lr * gradient;
             }
-            // Actualizar bias
-            biases[layer][j] -= lr * biasGrads[layer][j];
+        }
+        
+        for (size_t i = 0; i < biases[layer].size(); ++i) {
+            biases[layer][i] -= lr * (biasGrads[layer][i] / batchSize);
         }
     }
 }
@@ -452,45 +462,25 @@ void MLP::load(const std::string& filepath) {
     file.close();
 }
 
-
-double MLP::evaluate(const MatDouble_t& Xtest, const MatDouble_t& Ytest) const {
-    if (Xtest.empty() || Ytest.empty()) {
-        return 0.0;
-    }
-    
-    if (Xtest.size() != Ytest.size()) {
-        throw std::invalid_argument("Xtest y Ytest deben tener el mismo tamaño");
-    }
+double MLP::evaluate(const MatDouble_t& X, const MatDouble_t& Y) const {
+    if (X.empty() || Y.empty()) return 0.0;
     
     int correct = 0;
     
-    for (size_t i = 0; i < Xtest.size(); ++i) {
-        // Obtener predicción (sin dropout, modo inferencia)
-        VecDouble_t pred = predict(Xtest[i]);
-        const VecDouble_t& target = Ytest[i];
+    for (size_t i = 0; i < X.size(); ++i) {
+        std::vector<double> pred = predict(X[i]);
         
-        if (pred.size() != target.size()) {
-            throw std::runtime_error("Dimensión de predicción no coincide con target");
+        // Para clasificación binaria (1 salida)
+        if (Y[i].size() == 1) {
+            int predClass = (pred[0] > 0.5) ? 1 : 0;
+            int realClass = (int)(Y[i][0] + 0.5);  // Round
+            
+            if (predClass == realClass) correct++;
         }
-        
-        if (target.size() == 1) {
-            // ===============================================
-            // CLASIFICACIÓN BINARIA
-            // ===============================================
-            // Si la salida es un único valor (0 o 1)
-            double predicted = (pred[0] >= 0.5) ? 1.0 : 0.0;
-            double actual = target[0];
-            
-            if (std::abs(predicted - actual) < 0.1) {
-                correct++;
-            }
-            
-        } else {
-            // ===============================================
-            // CLASIFICACIÓN MULTICLASE
-            // ===============================================
-            // Encontrar la clase con mayor probabilidad en la predicción
-            size_t predClass = 0;
+        // Para multiclase (>1 salidas)
+        else {
+            // Encontrar clase predicha (max de las salidas)
+            int predClass = 0;
             double maxPred = pred[0];
             for (size_t j = 1; j < pred.size(); ++j) {
                 if (pred[j] > maxPred) {
@@ -499,24 +489,19 @@ double MLP::evaluate(const MatDouble_t& Xtest, const MatDouble_t& Ytest) const {
                 }
             }
             
-            // Encontrar la clase real (one-hot encoding)
-            size_t trueClass = 0;
-            double maxTrue = target[0];
-            for (size_t j = 1; j < target.size(); ++j) {
-                if (target[j] > maxTrue) {
-                    maxTrue = target[j];
-                    trueClass = j;
+            // Encontrar clase real (max de Y)
+            int realClass = 0;
+            double maxReal = Y[i][0];
+            for (size_t j = 1; j < Y[i].size(); ++j) {
+                if (Y[i][j] > maxReal) {
+                    maxReal = Y[i][j];
+                    realClass = j;
                 }
             }
             
-            // Comparar las clases
-            if (predClass == trueClass) {
-                correct++;
-            }
+            if (predClass == realClass) correct++;
         }
     }
     
-    // Retornar el porcentaje de aciertos
-    return (static_cast<double>(correct) / Xtest.size()) * 100.0;
+    return (100.0 * correct) / X.size();
 }
-

@@ -16,13 +16,7 @@ double ActivationFunctions::apply(double x, ActivationType type) {
         
         case ActivationType::RELU:
             return x > 0 ? x : 0.0;
-        
-        case ActivationType::LEAKY_RELU:
-            return x > 0 ? x : 0.01 * x;
-        
-        case ActivationType::LINEAR:
-            return x;
-        
+     
         case ActivationType::SOFTMAX:
             // Softmax se aplica a vectores, no a escalares
             throw std::runtime_error("Softmax debe aplicarse a vectores, no escalares");
@@ -46,12 +40,6 @@ double ActivationFunctions::derivative(double x, ActivationType type) {
         
         case ActivationType::RELU:
             return x > 0 ? 1.0 : 0.0;
-        
-        case ActivationType::LEAKY_RELU:
-            return x > 0 ? 1.0 : 0.01;
-        
-        case ActivationType::LINEAR:
-            return 1.0;
         
         default:
             throw std::runtime_error("Tipo de activación desconocido");
@@ -97,8 +85,6 @@ std::string ActivationFunctions::toString(ActivationType type) {
         case ActivationType::SIGMOID: return "SIGMOID";
         case ActivationType::TANH: return "TANH";
         case ActivationType::RELU: return "RELU";
-        case ActivationType::LEAKY_RELU: return "LEAKY_RELU";
-        case ActivationType::LINEAR: return "LINEAR";
         case ActivationType::SOFTMAX: return "SOFTMAX";
         default: return "UNKNOWN";
     }
@@ -108,8 +94,6 @@ ActivationType ActivationFunctions::fromString(const std::string& str) {
     if (str == "SIGMOID") return ActivationType::SIGMOID;
     if (str == "TANH") return ActivationType::TANH;
     if (str == "RELU") return ActivationType::RELU;
-    if (str == "LEAKY_RELU") return ActivationType::LEAKY_RELU;
-    if (str == "LINEAR") return ActivationType::LINEAR;
     if (str == "SOFTMAX") return ActivationType::SOFTMAX;
     throw std::runtime_error("Tipo de activación desconocido: " + str);
 }
