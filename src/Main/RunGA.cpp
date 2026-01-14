@@ -29,6 +29,189 @@
 #include <random>
 #include <cstring>
 
+// -------------------------------------------------
+// Carga de datasets (compatible con RunMLP)
+// -------------------------------------------------
+
+static void shuffleSplit3(const std::vector<std::vector<double>>& Xall,
+                          const std::vector<std::vector<double>>& Yall,
+                          double trainRatio, double valRatio,
+                          std::vector<std::vector<double>>& Xtrain,
+                          std::vector<std::vector<double>>& Ytrain,
+                          std::vector<std::vector<double>>& Xval,
+                          std::vector<std::vector<double>>& Yval,
+                          std::vector<std::vector<double>>& Xtest,
+                          std::vector<std::vector<double>>& Ytest) {
+    std::vector<size_t> idx(Xall.size());
+    for (size_t i = 0; i < idx.size(); ++i) idx[i] = i;
+    std::mt19937 g(std::random_device{}());
+    std::shuffle(idx.begin(), idx.end(), g);
+
+    size_t trainSize = static_cast<size_t>(idx.size() * trainRatio);
+    size_t valSize   = static_cast<size_t>(idx.size() * valRatio);
+
+    for (size_t i = 0; i < idx.size(); ++i) {
+        size_t j = idx[i];
+        if (i < trainSize) {
+            Xtrain.push_back(Xall[j]);
+            Ytrain.push_back(Yall[j]);
+        } else if (i < trainSize + valSize) {
+            Xval.push_back(Xall[j]);
+            Yval.push_back(Yall[j]);
+        } else {
+            Xtest.push_back(Xall[j]);
+            Ytest.push_back(Yall[j]);
+        }
+    }
+}
+
+struct DatasetGA {
+    std::vector<std::vector<double>> Xtrain, Ytrain, Xval, Yval, Xtest, Ytest;
+    size_t inputSize = 0;
+    size_t outputSize = 0;
+    std::string name;
+};
+
+static DatasetGA loadIrisGA(const std::string& path, double trainRatio = 0.7, double valRatio = 0.15) {
+    std::ifstream file(path);
+    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+
+    std::string line;
+    std::getline(file, line); // header
+
+    std::vector<std::vector<double>> Xall, Yall;
+    const std::vector<std::string> classes = {"Iris-setosa", "Iris-versicolor", "Iris-virginica"};
+
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string v;
+        std::vector<double> row;
+
+        std::getline(ss, v, ','); // first token (may be index)
+        for (int i = 0; i < 4; ++i) {
+            if (!std::getline(ss, v, ',')) break;
+            row.push_back(std::stod(v));
+        }
+        if (!std::getline(ss, v, ',')) continue;
+
+        std::vector<double> oh(3, 0.0);
+        auto it = std::find(classes.begin(), classes.end(), v);
+        if (it != classes.end()) oh[std::distance(classes.begin(), it)] = 1.0;
+
+        if (row.size() == 4) {
+            Xall.push_back(row);
+            Yall.push_back(oh);
+        }
+    }
+
+    DatasetGA d;
+    d.name = "iris";
+    d.inputSize = 4;
+    d.outputSize = 3;
+    shuffleSplit3(Xall, Yall, trainRatio, valRatio, d.Xtrain, d.Ytrain, d.Xval, d.Yval, d.Xtest, d.Ytest);
+    return d;
+}
+
+static DatasetGA loadCancerGA(const std::string& path, double trainRatio = 0.7, double valRatio = 0.15) {
+    std::ifstream file(path);
+    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+
+    std::string line;
+    std::getline(file, line);
+    std::vector<std::vector<double>> Xall, Yall;
+
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string v;
+        std::vector<double> row;
+
+        std::getline(ss, v, ','); // id
+        std::getline(ss, v, ','); // diagnosis
+        double label = (v == "M") ? 1.0 : 0.0;
+
+        for (int i = 0; i < 30; ++i) {
+            if (!std::getline(ss, v, ',')) break;
+            if (!v.empty()) row.push_back(std::stod(v));
+        }
+
+        if (row.size() == 30) {
+            Xall.push_back(row);
+            Yall.push_back({label});
+        }
+    }
+
+    // z-score normalization
+    if (!Xall.empty()) {
+        size_t numFeatures = 30;
+        std::vector<double> means(numFeatures, 0.0), stds(numFeatures, 0.0);
+        for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) means[j] += s[j];
+        for (auto& m : means) m /= Xall.size();
+        for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) {
+            double diff = s[j] - means[j]; stds[j] += diff * diff;
+        }
+        for (auto& sd : stds) sd = std::sqrt(sd / Xall.size());
+        for (auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) if (stds[j] > 1e-8) s[j] = (s[j] - means[j]) / stds[j];
+    }
+
+    DatasetGA d;
+    d.name = "cancer";
+    d.inputSize = 30;
+    d.outputSize = 1;
+    shuffleSplit3(Xall, Yall, trainRatio, valRatio, d.Xtrain, d.Ytrain, d.Xval, d.Yval, d.Xtest, d.Ytest);
+    return d;
+}
+
+static DatasetGA loadWineGA(const std::string& path, double trainRatio = 0.7, double valRatio = 0.15) {
+    std::ifstream file(path);
+    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+
+    std::string line;
+    std::getline(file, line); // header
+
+    std::vector<std::vector<double>> Xall, Yall;
+
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string v;
+        std::vector<double> row;
+        for (int i = 0; i < 11; ++i) {
+            if (!std::getline(ss, v, ',')) break;
+            row.push_back(std::stod(v));
+        }
+        if (!std::getline(ss, v, ',')) continue;
+        int quality = std::stoi(v);
+        double label = (quality >= 6) ? 1.0 : 0.0;
+
+        if (row.size() == 11) {
+            Xall.push_back(row);
+            Yall.push_back({label});
+        }
+    }
+
+    // z-score normalization
+    if (!Xall.empty()) {
+        size_t numFeatures = Xall[0].size();
+        std::vector<double> means(numFeatures, 0.0), stds(numFeatures, 0.0);
+        for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) means[j] += s[j];
+        for (auto& m : means) m /= Xall.size();
+        for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) {
+            double diff = s[j] - means[j]; stds[j] += diff * diff;
+        }
+        for (auto& sd : stds) sd = std::sqrt(sd / Xall.size());
+        for (auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) if (stds[j] > 1e-8) s[j] = (s[j] - means[j]) / stds[j];
+    }
+
+    DatasetGA d;
+    d.name = "wine";
+    d.inputSize = 11;
+    d.outputSize = 1;
+    shuffleSplit3(Xall, Yall, trainRatio, valRatio, d.Xtrain, d.Ytrain, d.Xval, d.Yval, d.Xtest, d.Ytest);
+    return d;
+}
+
 // =============================================================================
 // FUNCIONES DE UTILIDAD
 // =============================================================================
@@ -329,31 +512,62 @@ int main(int argc, char* argv[]) {
     // Parsear activación
     ActivationType activation = ActivationFunctions::fromString(activationStr);
     
-    // Cargar datos
+    // Cargar datos - soporte para nombres de dataset al estilo RunMLP
     std::vector<std::vector<double>> X, Y;
-    std::cout << "Cargando dataset: " << datasetPath << "\n";
-    loadCSV(datasetPath, X, Y, hasHeader, labelCol);
-    std::cout << "Muestras cargadas: " << X.size() << "\n";
-    
-    if (X.empty()) {
-        std::cerr << "Error: Dataset vacío\n";
-        return 1;
-    }
-    
-    // Normalizar características
-    normalize(X);
-    
-    // Convertir a one-hot si es multiclase
-    if (numClasses > 0) {
-        toOneHot(Y, numClasses);
-    }
-    
-    // Dividir en train/test
     std::vector<std::vector<double>> Xtrain, Ytrain, Xtest, Ytest;
-    trainTestSplit(X, Y, Xtrain, Ytrain, Xtest, Ytest, 0.2);
-    
-    std::cout << "Train: " << Xtrain.size() << " muestras\n";
-    std::cout << "Test: " << Xtest.size() << " muestras\n\n";
+    bool loadedWithRunMLP = false;
+
+    std::cout << "Cargando dataset: " << datasetPath << "\n";
+
+    if (datasetPath == "iris" || datasetPath == "cancer" || datasetPath == "wine" || datasetPath == "mnist") {
+        DatasetGA d;
+        if (datasetPath == "iris") d = loadIrisGA("data/Iris.csv");
+        else if (datasetPath == "cancer") d = loadCancerGA("data/cancermama.csv");
+        else if (datasetPath == "wine") d = loadWineGA("data/winequality-red.csv");
+        else {
+            // MNIST (usar RunMLP paths, carga parcial por eficiencia)
+            // Reuse CSV loader as fallback for MNIST train/test split if needed
+            loadCSV("data/MNIST/train.csv", X, Y, true, -1);
+            normalize(X);
+            trainTestSplit(X, Y, Xtrain, Ytrain, Xtest, Ytest, 0.2);
+            std::cout << "Train: " << Xtrain.size() << " muestras\n";
+            std::cout << "Test: " << Xtest.size() << " muestras\n\n";
+        }
+
+        if (!d.Xtrain.empty() || !Xtrain.empty()) {
+            // Si usamos los loaders de RunMLP, combinar train+val para entrenar
+            if (!d.Xtrain.empty()) {
+                Xtrain = d.Xtrain;
+                Ytrain = d.Ytrain;
+                // añadir validación al conjunto de entrenamiento para GA
+                Xtrain.insert(Xtrain.end(), d.Xval.begin(), d.Xval.end());
+                Ytrain.insert(Ytrain.end(), d.Yval.begin(), d.Yval.end());
+                Xtest = d.Xtest;
+                Ytest = d.Ytest;
+                // establecer numClasses si no se indicó
+                if (numClasses <= 0) numClasses = static_cast<int>(d.outputSize);
+                loadedWithRunMLP = true;
+            }
+        }
+    }
+
+    // Fallback: si no cargamos mediante RunMLP, usar el CSV genérico
+    if (!loadedWithRunMLP) {
+        loadCSV(datasetPath, X, Y, hasHeader, labelCol);
+        std::cout << "Muestras cargadas: " << X.size() << "\n";
+        if (X.empty()) {
+            std::cerr << "Error: Dataset vacío\n";
+            return 1;
+        }
+        normalize(X);
+        if (numClasses > 0) toOneHot(Y, numClasses);
+        trainTestSplit(X, Y, Xtrain, Ytrain, Xtest, Ytest, 0.2);
+        std::cout << "Train: " << Xtrain.size() << " muestras\n";
+        std::cout << "Test: " << Xtest.size() << " muestras\n\n";
+    } else {
+        std::cout << "Train: " << Xtrain.size() << " muestras\n";
+        std::cout << "Test: " << Xtest.size() << " muestras\n\n";
+    }
     
     // Crear algoritmo genético según modo
     Individual best({1});  // Placeholder
@@ -368,14 +582,16 @@ int main(int argc, char* argv[]) {
         
         std::vector<int> topology = parseArchitecture(archStr);
         
-        // Verificar/ajustar arquitectura
-        if (topology.front() != static_cast<int>(X[0].size())) {
-            std::cout << "Ajustando entrada a " << X[0].size() << " features\n";
-            topology[0] = X[0].size();
-        }
-        if (topology.back() != static_cast<int>(Y[0].size())) {
-            std::cout << "Ajustando salida a " << Y[0].size() << " clases\n";
-            topology.back() = Y[0].size();
+        // Verificar/ajustar arquitectura (usar Xtrain/Ytrain)
+        if (!Xtrain.empty() && !Ytrain.empty()) {
+            if (topology.front() != static_cast<int>(Xtrain[0].size())) {
+                std::cout << "Ajustando entrada a " << Xtrain[0].size() << " features\n";
+                topology[0] = static_cast<int>(Xtrain[0].size());
+            }
+            if (topology.back() != static_cast<int>(Ytrain[0].size())) {
+                std::cout << "Ajustando salida a " << Ytrain[0].size() << " clases\n";
+                topology.back() = static_cast<int>(Ytrain[0].size());
+            }
         }
         
         std::cout << "Arquitectura: ";
@@ -394,8 +610,8 @@ int main(int argc, char* argv[]) {
         std::cout << "MODO: NEUROEVOLUCIÓN (Nota 2.00)\n";
         std::cout << "========================================\n\n";
         
-        if (inputSize == 0) inputSize = X[0].size();
-        if (outputSize == 0) outputSize = Y[0].size();
+        if (inputSize == 0 && !Xtrain.empty()) inputSize = static_cast<int>(Xtrain[0].size());
+        if (outputSize == 0 && !Ytrain.empty()) outputSize = static_cast<int>(Ytrain[0].size());
         
         std::cout << "Entradas: " << inputSize << "\n";
         std::cout << "Salidas: " << outputSize << "\n";
