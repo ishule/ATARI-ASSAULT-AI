@@ -1,0 +1,25 @@
+Entrenando perceptron para dataset mnist...
+Epoch 1 - train: 85.2857% val: 81.0667%
+Epoch 2 - train: 89.1714% val: 82.4%
+Epoch 3 - train: 88.4286% val: 81.7333%
+Epoch 4 - train: 90.4% val: 82.6667%
+Epoch 5 - train: 91.4% val: 83.3333%
+Epoch 6 - train: 91.4% val: 84.2667%
+Epoch 7 - train: 91.7714% val: 83.2%
+Epoch 8 - train: 92.6857% val: 83.6%
+Epoch 9 - train: 94.2857% val: 85.2%
+Epoch 10 - train: 90.5143% val: 81.8667%
+Epoch 11 - train: 92.8% val: 84%
+Epoch 12 - train: 93.2857% val: 83.2%
+Epoch 13 - train: 93.1714% val: 83.8667%
+Epoch 14 - train: 93.4% val: 83.8667%
+Epoch 15 - train: 93.8571% val: 83.7333%
+Epoch 16 - train: 93.9714% val: 83.6%
+Epoch 17 - train: 92.9714% val: 82.2667%
+Epoch 18 - train: 94.2% val: 84%
+Epoch 19 - train: 92.8286% val: 82%
+Epoch 20 - train: 94.2% val: 83.3333%
+Epoch 21 - train: 95.1143% val: 84.2667%
+Epoch 22 - train: 96.1429% val: 86.1333%
+Epoch 23 - train: 95.7714% val: 84.4%
+Epoch 24 - train: 96.1143% val: 84.9333%
