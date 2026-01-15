@@ -292,52 +292,81 @@ void Individual::mutateArchitecture(double mutationRate, int minNeurons, int max
                 }
             }
             break;
-        case 2:
-            // Inserta una nueva capa oculta en una posición aleatoria
+    case 2: // INSERTAR CAPA (CORREGIDO)
             if (topology_.size() < 8) {
                 uniform_int_distribution<> posDist(1, topology_.size() - 1);
                 uniform_int_distribution<> neuronDist(minNeurons, maxNeurons);
-                int pos = posDist(gen);
+                
+                int pos = posDist(gen); // Posición donde insertar
                 int newNeurons = neuronDist(gen);
-                int prevSize = topology_[pos - 1];
+                int prevSize = topology_[pos - 1]; // Tamaño capa anterior
+
+                // 1. Actualizar Topología
                 topology_.insert(topology_.begin() + pos, newNeurons);
+
+                // 2. Crear pesos ENTRANTES a la nueva capa (pos-1 -> pos)
                 vector<vector<double>> newLayerWeights(newNeurons);
                 for (int i = 0; i < newNeurons; ++i) {
                     newLayerWeights[i].resize(prevSize);
-                    for (int j = 0; j < prevSize; ++j) {
-                        newLayerWeights[i][j] = weightDist(gen);
-                    }
+                    for (auto& w : newLayerWeights[i]) w = weightDist(gen);
                 }
+                
+                // Insertar en la estructura
                 weights_.insert(weights_.begin() + (pos - 1), newLayerWeights);
                 biases_.insert(biases_.begin() + (pos - 1), vector<double>(newNeurons, 0.0));
+
+                // 3. REGENERAR pesos SALIENTES de la nueva capa (pos -> pos+1)
+                // 'pos' ahora apunta a la conexión entre la Nueva Capa y la Siguiente
                 if (static_cast<size_t>(pos) < weights_.size()) {
-                    for (auto& neuronWeights : weights_[pos]) {
-                        neuronWeights.resize(newNeurons);
-                        for (int i = prevSize; i < newNeurons; ++i) {
-                            neuronWeights[i] = weightDist(gen);
-                        }
+                    int nextLayerSize = topology_[pos + 1]; 
+                    // Input para la siguiente capa ahora es 'newNeurons'
+                    
+                    // Limpiamos y redimensionamos correctamente la matriz
+                    weights_[pos].clear();
+                    weights_[pos].resize(nextLayerSize, vector<double>(newNeurons));
+                    
+                    // Inicialización limpia (Xavier simplificado o Random)
+                    for(auto& row : weights_[pos]) {
+                        for(auto& w : row) w = weightDist(gen);
                     }
                 }
             }
             break;
         case 3:
             // Elimina una capa oculta aleatoria
-            if (topology_.size() > 3) {
+            if (topology_.size() > 3) { // Asegura que quede Input, 1 Oculta, Output
                 uniform_int_distribution<> posDist(1, topology_.size() - 2);
                 int pos = posDist(gen);
+                
+                // Eliminar la capa de la topología
                 topology_.erase(topology_.begin() + pos);
-                if (static_cast<size_t>(pos - 1) < weights_.size()) {
-                    weights_.erase(weights_.begin() + (pos - 1));
-                    biases_.erase(biases_.begin() + (pos - 1));
+                
+                // Eliminar los pesos/biases salientes de esa capa (que iban a la siguiente)
+                if (static_cast<size_t>(pos) < weights_.size()) {
+                    weights_.erase(weights_.begin() + pos);
+                    biases_.erase(biases_.begin() + pos);
                 }
-                if (static_cast<size_t>(pos - 1) < weights_.size() && pos >= 1) {
-                    int newInputSize = topology_[pos - 1];
-                    for (auto& neuronWeights : weights_[pos - 1]) {
-                        neuronWeights.resize(newInputSize);
-                        for (auto& w : neuronWeights) {
-                            if (w == 0.0) w = weightDist(gen);
+
+                // Reconstruir la conexión anterior (pos-1) para conectar con la nueva siguiente
+                // La capa 'pos' ahora es la que antes era 'pos+1'
+                if (pos > 0 && static_cast<size_t>(pos - 1) < weights_.size()) {
+                    int inputSize = topology_[pos - 1];
+                    int outputSize = topology_[pos];
+                    
+                    // Regenerar matriz completa (Xavier init)
+                    weights_[pos - 1].clear();
+                    weights_[pos - 1].resize(outputSize, vector<double>(inputSize));
+                    
+                    double limit = sqrt(6.0 / (inputSize + outputSize));
+                    uniform_real_distribution<> dis(-limit, limit);
+                    
+                    for(int j=0; j<outputSize; ++j) {
+                        for(int k=0; k<inputSize; ++k) {
+                            weights_[pos - 1][j][k] = dis(gen);
                         }
                     }
+                    // Regenerar bias
+                    biases_[pos - 1].assign(outputSize, 0.0);
                 }
             }
             break;
@@ -359,6 +388,7 @@ vector<double> Individual::forwardPass(const vector<double>& input) const {
             // Si es la última capa, aplica sigmoide; si no, la función de activación seleccionada
             if (isLastLayer) {
                 output[j] = 1.0 / (1.0 + exp(-sum));
+                //output[j]=sum;
             } else {
                 output[j] = ActivationFunctions::apply(sum, activation_);
             }

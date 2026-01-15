@@ -43,7 +43,7 @@ struct GAConfig {
     bool evolveArchitecture = false;  // true = neuroevolución
     double archMutationRate = 0.05;   // Prob de mutar arquitectura
     int minHiddenLayers = 1;
-    int maxHiddenLayers = 5;
+    int maxHiddenLayers = 8;
     int minNeuronsPerLayer = 4;
     int maxNeuronsPerLayer = 128;
     

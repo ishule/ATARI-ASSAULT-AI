@@ -205,7 +205,7 @@ void GeneticAlgorithm::breed(const vector<Individual>& parents) {
         }
         newPopulation.push_back(child);
     }
-    population = newPopulation;
+    population = move(newPopulation); // con move va mucho más rápido porque se copian punteros
 }
 
 // Evaluar la población usando datos de entrada y salida
