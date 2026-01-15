@@ -1,18 +1,4 @@
 /**
- * =============================================================================
- * RunGA.cpp - Programa principal para Algoritmo Genético con Redes Neuronales
- * =============================================================================
- * 
- * Este programa permite entrenar redes neuronales usando:
- * 
- * 1. EVOLUCIÓN DE PESOS (--mode weights) - Nota 1.75
- *    - Arquitectura fija definida por el usuario
- *    - Solo se evolucionan los pesos mediante GA
- *    
- * 2. NEUROEVOLUCIÓN (--mode neuro) - Nota 2.00
- *    - Se evoluciona tanto la arquitectura como los pesos
- *    - Mutaciones pueden añadir/eliminar neuronas y capas
- * 
  * Uso:
  *   ./RunGA --mode weights --arch 4-10-3 --dataset iris --generations 100
  *   ./RunGA --mode neuro --input 4 --output 3 --dataset iris --generations 100
@@ -574,10 +560,10 @@ int main(int argc, char* argv[]) {
     
     if (mode == "weights") {
         // =====================================================================
-        // MODO 1: EVOLUCIÓN DE PESOS SOLAMENTE (Nota 1.75)
+        // MODO 1: EVOLUCIÓN DE PESOS SOLAMENTE 
         // =====================================================================
         std::cout << "========================================\n";
-        std::cout << "MODO: Evolución de PESOS (Nota 1.75)\n";
+        std::cout << "MODO: Evolución de PESOS \n";
         std::cout << "========================================\n\n";
         
         std::vector<int> topology = parseArchitecture(archStr);
@@ -604,10 +590,10 @@ int main(int argc, char* argv[]) {
         
     } else if (mode == "neuro") {
         // =====================================================================
-        // MODO 2: NEUROEVOLUCIÓN (Nota 2.00)
+        // MODO 2: NEUROEVOLUCIÓN 
         // =====================================================================
         std::cout << "========================================\n";
-        std::cout << "MODO: NEUROEVOLUCIÓN (Nota 2.00)\n";
+        std::cout << "MODO: NEUROEVOLUCIÓN\n";
         std::cout << "========================================\n\n";
         
         if (inputSize == 0 && !Xtrain.empty()) inputSize = static_cast<int>(Xtrain[0].size());

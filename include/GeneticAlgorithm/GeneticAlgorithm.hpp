@@ -1,16 +1,10 @@
 /*
- * GENETIC ALGORITHM - El algoritmo genético que evoluciona las redes
- * 
- * Esto es lo que controla toda la evolución:
  * - Crea la población inicial
  * - Evalúa el fitness de cada individuo
  * - Selecciona los mejores para reproducirse
  * - Hace crossover y mutación
  * - Repite hasta encontrar una buena solución
- * 
- * Dos modos:
- * - Evolución de pesos (nota 1.75): arquitectura fija
- * - Neuroevolución (nota 2.00): arquitectura + pesos
+ *  Con evolucin de pesos o neuroevolucion
  */
 
 #ifndef GENETIC_ALGORITHM_HPP
@@ -20,6 +14,8 @@
 #include <vector>
 #include <string>
 #include <functional>
+
+using namespace std;
 
 // Tipos de selección disponibles
 enum class SelectionType {
@@ -58,90 +54,69 @@ struct GAConfig {
     // Output
     bool verbose = true;              // Mostrar progreso
     int printEvery = 1;               // Cada cuántas generaciones imprimir
-    std::string saveDir = "models/ga/";
+    string saveDir = "models/ga/";
 };
 
 class GeneticAlgorithm {
 private:
     GAConfig config;
-    std::vector<Individual> population;       // La población
+    vector<Individual> population;       // La población
     
     // Estadísticas
-    std::vector<double> bestFitnessHistory;
-    std::vector<double> avgFitnessHistory;
+    vector<double> bestFitnessHistory;
+    vector<double> avgFitnessHistory;
     int currentGeneration;
     
     // Función de fitness custom (opcional)
-    std::function<double(Individual&)> fitnessFunction;
+    function<double(Individual&)> fitnessFunction;
     
 public:
-    // === CONSTRUCTORES ===
+    // Solo pesos
+    GeneticAlgorithm(const GAConfig& cfg,const vector<int>& topology,ActivationType act = ActivationType::RELU);
     
-    // Para evolución de pesos (arquitectura fija)
-    GeneticAlgorithm(const GAConfig& cfg,
-                     const std::vector<int>& topology,
-                     ActivationType act = ActivationType::RELU);
+    // Para neuroevolución 
+    GeneticAlgorithm(const GAConfig& cfg,int inputSize,int outputSize,ActivationType act = ActivationType::RELU);
     
-    // Para neuroevolución (arquitectura variable)
-    GeneticAlgorithm(const GAConfig& cfg,
-                     int inputSize,
-                     int outputSize,
-                     ActivationType act = ActivationType::RELU);
+    // DataSet
+    Individual evolve(const vector<vector<double>>& X,const vector<vector<double>>& Y);
     
-    // === EVOLUCIÓN ===
-    
-    // Evoluciona con un dataset (lo típico)
-    Individual evolve(const std::vector<std::vector<double>>& X,
-                      const std::vector<std::vector<double>>& Y);
-    
-    // Evoluciona con función de fitness custom (para juegos etc)
-    Individual evolveWithCustomFitness(
-        std::function<double(Individual&)> fitnessFunc);
+    // Juego para de Atari
+    Individual evolveWithCustomFitness(function<double(Individual&)> fitnessFunc);
     
     // Ejecuta una generación. Devuelve true si llegó al objetivo
     bool runGeneration();
     
-    // === SELECCIÓN ===
-    
-    std::vector<Individual> selection();          // Selecciona padres
+    vector<Individual> selection();          // Selecciona padres
     Individual tournamentSelection(int k);        // Selección por torneo
     Individual rouletteSelection();               // Selección por ruleta
     Individual rankSelection();                   // Selección por ranking
     
-    // === REPRODUCCIÓN ===
     
     // Crea la siguiente generación a partir de los padres
-    void breed(const std::vector<Individual>& parents);
+    void breed(const vector<Individual>& parents);
     
-    // === EVALUACIÓN ===
-    
-    void evaluatePopulation(const std::vector<std::vector<double>>& X,
-                           const std::vector<std::vector<double>>& Y);
+    void evaluatePopulation(const vector<vector<double>>& X,const vector<vector<double>>& Y);
     void evaluatePopulationCustom();
-    
-    // === GETTERS ===
-    
+    // Getters
     const Individual& getBest() const;
     double getBestFitness() const;
     double getAverageFitness() const;
     int getCurrentGeneration() const { return currentGeneration; }
-    const std::vector<double>& getBestFitnessHistory() const { return bestFitnessHistory; }
-    const std::vector<double>& getAvgFitnessHistory() const { return avgFitnessHistory; }
-    const std::vector<Individual>& getPopulation() const { return population; }
+    const vector<double>& getBestFitnessHistory() const { return bestFitnessHistory; }
+    const vector<double>& getAvgFitnessHistory() const { return avgFitnessHistory; }
+    const vector<Individual>& getPopulation() const { return population; }
     
-    // === UTILS ===
-    
-    void setFitnessFunction(std::function<double(Individual&)> func) {
+    void setFitnessFunction(function<double(Individual&)> func) {
         fitnessFunction = func;
     }
     
-    void saveBest(const std::string& filepath) const;
-    void loadPopulation(const std::string& directory);
+    void saveBest(const string& filepath) const;
+    void loadPopulation(const string& directory);
     void printStats() const;
     
 private:
     void sortPopulation();            // Ordena por fitness (mejor primero)
-    std::vector<Individual> getElite(); // Devuelve los élite
+    vector<Individual> getElite(); // Devuelve los élite
 };
 
 #endif
