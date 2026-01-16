@@ -29,3 +29,4 @@ ale.pc
 cmake_install.cmake
 cmake_uninstall.cmake
 agent
+bin/
