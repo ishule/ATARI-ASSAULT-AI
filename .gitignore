@@ -19,6 +19,7 @@ dist/
 build/
 *.log
 .env
+bin/
 
 # Ignore ALE build artifacts
 lib/ale/*

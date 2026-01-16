@@ -155,7 +155,6 @@ void MLP::computeGradients(const VecDouble_t& x, const VecDouble_t& y,
     forwardPass(x, true);  // En modo training
     
     // Calcular error de salida (delta de la última capa)
-    size_t outputLayer = weights.size() - 1;
     VecDouble_t delta = layerOutputs.back();
     
     // Para MSE: delta = (y_pred - y_true)

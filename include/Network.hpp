@@ -31,6 +31,8 @@ public:
 
     // Evaluar la red con datos de test
     virtual double evaluate(const MatDouble_t& Xtest, const MatDouble_t& Ytest) const {
+        (void)Xtest;
+        (void)Ytest;
         return 0.0;  // Por defecto devuelve 0, reemplazar en clases derivadas
     }
 
