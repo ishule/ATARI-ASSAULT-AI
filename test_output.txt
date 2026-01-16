@@ -1,0 +1,30 @@
+Cargando modelo: models/atari_mlp_balanced.txt
+✓ Modelo cargado
+
+A.L.E: Arcade Learning Environment (version 0.6.0)
+[Powered by Stella]
+Use -help for help screen.
+Game console created:
+  ROM file:  supported/assault.bin
+  Cart Name: Assault (Bomb)
+  Cart MD5:  de78b3a064d374390ac0710f95edde92
+  Display Format:  AUTO-DETECT ==> NTSC
+  ROM Size:        4096
+  Bankswitch Type: AUTO-DETECT ==> 4K
+
+Screen Display Active. [Manual Control Mode] 'm' [Slowdown] 'a' [Speedup] 's' [VolumeDown] '[' [VolumeUp] ']'.
+Running ROM file...
+Random seed is 0
+=== JUGANDO CON MLP ENTRENADO ===
+
+Episodio 1/10 - Score: 189 (steps: 591)
+Episodio 2/10 - [Speedup] 12 msec delay
+[Speedup] 7 msec delay
+[Speedup] 2 msec delay
+[Speedup] 0 msec delay
+[Speedup] 0 msec delay
+[Speedup] 0 msec delay
+[Speedup] 0 msec delay
+Score: 252 (steps: 1184)
+Episodio 3/10 - Score: 441 (steps: 1639)
+Episodio 4/10 - 

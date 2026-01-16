@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <sys/stat.h>
 #include <cmath>
+#include <map>
 
 static void createDirectory(const std::string& path) {
     struct stat info;
@@ -304,143 +305,87 @@ static Dataset loadWine(const std::string& path, double trainRatio, double valRa
 }
 
 
-// ============================================================================
-// MNIST Dataset - IGUAL QUE EN RunPerceptron.cpp
-// ============================================================================
-static Dataset loadMNIST(const std::string& trainPath, const std::string& testPath, 
+static Dataset loadMNIST(const std::string& trainPath,
                         double trainRatio, double valRatio) {
     std::cout << "Cargando MNIST...\n";
     
     Dataset d;
     d.name = "mnist";
-    d.inputSize = 784;  // 28x28 pixeles
-    d.outputSize = 10;  // 10 dígitos (0-9)
+    d.inputSize = 784;
+    d.outputSize = 10;
     
     // ========================================================================
-    // Cargar datos de TRAIN
+    // Cargar SOLO train.csv (que SÍ tiene labels)
     // ========================================================================
     std::ifstream trainFile(trainPath);
     if (!trainFile) throw std::runtime_error("No se pudo abrir " + trainPath);
     
     std::string line;
-    std::getline(trainFile, line);  // Skip header si existe
+    std::getline(trainFile, line);  // Skip header
     
-    MatDouble_t XtrainAll, YtrainAll;
-    int trainCount = 0;
-    int maxTrainSamples = 10000;  // Limitar para velocidad
+    MatDouble_t Xall, Yall;
+    int count = 0;
     
-    std::cout << "  Leyendo train..." << std::flush;
+    std::cout << "  Leyendo MNIST..." << std::flush;
     
-    while (std::getline(trainFile, line) && trainCount < maxTrainSamples) {
+    while (std::getline(trainFile, line)) {
         if (line.empty()) continue;
         
         std::stringstream ss(line);
-        std::string v;
+        std::string val;
         
-        // Primera columna: label (0-9)
-        std::getline(ss, v, ',');
-        int label = std::stoi(v);
+        // Leer label (primera columna en train.csv)
+        std::getline(ss, val, ',');
+        int label = std::stoi(val);
         
         // One-hot encoding
-        std::vector<double> oh(10, 0.0);
+        VecDouble_t oh(10, 0.0);
         oh[label] = 1.0;
         
-        // Siguientes 784 columnas: pixeles
-        std::vector<double> pixels;
-        pixels.reserve(784);
-        
-        for (int i = 0; i < 784; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            // Normalizar de [0, 255] a [0, 1]
-            pixels.push_back(std::stod(v) / 255.0);
+        // Leer 784 píxeles
+        VecDouble_t pixels;
+        while (std::getline(ss, val, ',')) {
+            if (!val.empty()) {
+                pixels.push_back(std::stod(val) / 255.0);
+            }
         }
         
         if (pixels.size() == 784) {
-            XtrainAll.push_back(pixels);
-            YtrainAll.push_back(oh);
-            trainCount++;
+            Xall.push_back(pixels);
+            Yall.push_back(oh);
+            count++;
         }
         
-        if (trainCount % 2000 == 0) {
-            std::cout << "." << std::flush;
-        }
+        if (count % 2000 == 0) std::cout << "." << std::flush;
     }
     
     trainFile.close();
-    std::cout << " " << trainCount << " muestras\n";
+    std::cout << " " << count << " muestras\n";
     
     // ========================================================================
-    // Cargar datos de TEST
+    // Dividir en Train / Val / Test (ignorar test.csv sin labels)
     // ========================================================================
-    std::ifstream testFile(testPath);
-    if (!testFile) throw std::runtime_error("No se pudo abrir " + testPath);
-    
-    std::getline(testFile, line);  // Skip header
-    
-    MatDouble_t XtestAll, YtestAll;
-    int testCount = 0;
-    int maxTestSamples = 2000;  // Limitar para velocidad
-    
-    std::cout << "  Leyendo test..." << std::flush;
-    
-    while (std::getline(testFile, line) && testCount < maxTestSamples) {
-        if (line.empty()) continue;
-        
-        std::stringstream ss(line);
-        std::string v;
-        
-        std::getline(ss, v, ',');
-        int label = std::stoi(v);
-        
-        std::vector<double> oh(10, 0.0);
-        oh[label] = 1.0;
-        
-        std::vector<double> pixels;
-        pixels.reserve(784);
-        
-        for (int i = 0; i < 784; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            pixels.push_back(std::stod(v) / 255.0);
-        }
-        
-        if (pixels.size() == 784) {
-            XtestAll.push_back(pixels);
-            YtestAll.push_back(oh);
-            testCount++;
-        }
-        
-        if (testCount % 500 == 0) {
-            std::cout << "." << std::flush;
-        }
-    }
-    
-    testFile.close();
-    std::cout << " " << testCount << " muestras\n";
-    
-    // ========================================================================
-    // Dividir TRAIN en train y validation
-    // ========================================================================
-    std::vector<size_t> idx(XtrainAll.size());
+    std::vector<size_t> idx(Xall.size());
     for (size_t i = 0; i < idx.size(); ++i) idx[i] = i;
     std::mt19937 g(std::random_device{}());
     std::shuffle(idx.begin(), idx.end(), g);
     
-    size_t actualTrainSize = static_cast<size_t>(idx.size() * trainRatio / (trainRatio + valRatio));
+    size_t trainSize = static_cast<size_t>(idx.size() * trainRatio);
+    size_t valSize   = static_cast<size_t>(idx.size() * valRatio);
     
     for (size_t i = 0; i < idx.size(); ++i) {
         size_t j = idx[i];
-        if (i < actualTrainSize) {
-            d.Xtrain.push_back(XtrainAll[j]);
-            d.Ytrain.push_back(YtrainAll[j]);
+        if (i < trainSize) {
+            d.Xtrain.push_back(Xall[j]);
+            d.Ytrain.push_back(Yall[j]);
+        } else if (i < trainSize + valSize) {
+            d.Xval.push_back(Xall[j]);
+            d.Yval.push_back(Yall[j]);
         } else {
-            d.Xval.push_back(XtrainAll[j]);
-            d.Yval.push_back(YtrainAll[j]);
+            d.Xtest.push_back(Xall[j]);
+            d.Ytest.push_back(Yall[j]);
         }
     }
-    
-    // Test ya está separado
-    d.Xtest = XtestAll;
-    d.Ytest = YtestAll;
     
     std::cout << "MNIST cargado: Train=" << d.Xtrain.size() 
               << " Val=" << d.Xval.size() 
@@ -449,6 +394,241 @@ static Dataset loadMNIST(const std::string& trainPath, const std::string& testPa
     return d;
 }
 
+// ...existing code... (después de shuffleSplit3, ANTES de loadAtari)
+
+// ============================================================================
+// BALANCEO SUAVE PARA ATARI (mantiene más datos)
+// ============================================================================
+
+static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPerClass = 5) {
+    std::cout << "\n=== BALANCEANDO DATASET DE ATARI (modo suave) ===\n";
+    
+    // PASO 1: Filtrar acciones inválidas [0,1,1]
+    MatDouble_t X_filtered, Y_filtered;
+    int invalidCount = 0;
+    
+    for (size_t i = 0; i < Y.size(); ++i) {
+        if (Y[i][1] == 1.0 && Y[i][2] == 1.0) {
+            invalidCount++;
+            continue;
+        }
+        X_filtered.push_back(X[i]);
+        Y_filtered.push_back(Y[i]);
+    }
+    
+    if (invalidCount > 0) {
+        std::cout << "  ⚠️  Eliminadas " << invalidCount 
+                  << " muestras con conflicto [0,1,1]\n";
+    }
+    
+    // PASO 2: Agrupar por clase
+    std::map<VecDouble_t, std::vector<size_t>> classIndices;
+    
+    for (size_t i = 0; i < Y_filtered.size(); ++i) {
+        classIndices[Y_filtered[i]].push_back(i);
+    }
+    
+    // Función helper para nombres de acciones
+    auto getActionName = [](const VecDouble_t& action) -> std::string {
+        if (action[0] == 1 && action[1] == 1) return "LEFTFIRE";
+        else if (action[0] == 1 && action[2] == 1) return "RIGHTFIRE";
+        else if (action[0] == 1) return "FIRE";
+        else if (action[1] == 1) return "LEFT";
+        else if (action[2] == 1) return "RIGHT";
+        else return "NOOP";
+    };
+    
+    // PASO 3: Mostrar distribución ANTES
+    std::cout << "\n  Distribución ANTES del balance:\n";
+    std::vector<std::pair<std::string, size_t>> classSizes;
+    
+    for (const auto& [action, indices] : classIndices) {
+        std::string name = getActionName(action);
+        size_t count = indices.size();
+        double pct = (100.0 * count) / Y_filtered.size();
+        
+        std::cout << "    " << std::left << std::setw(12) << name 
+                  << ": " << std::right << std::setw(5) << count 
+                  << " (" << std::fixed << std::setprecision(1) << pct << "%)\n";
+        
+        classSizes.push_back({name, count});
+    }
+    
+    // PASO 4: Filtrar clases con muy pocas muestras
+    std::vector<VecDouble_t> validClasses;
+    std::cout << "\n  Clases válidas (>= " << minSamplesPerClass << " muestras):\n";
+    
+    for (const auto& [action, indices] : classIndices) {
+        std::string name = getActionName(action);
+        
+        if (indices.size() >= minSamplesPerClass) {
+            validClasses.push_back(action);
+            std::cout << "    ✓ " << std::left << std::setw(12) << name 
+                      << ": " << indices.size() << " muestras\n";
+        } else {
+            std::cout << "    ✗ " << std::left << std::setw(12) << name 
+                      << ": " << indices.size() << " muestras (eliminada)\n";
+        }
+    }
+    
+    if (validClasses.empty()) {
+        throw std::runtime_error("No hay clases válidas después del filtrado");
+    }
+    
+    // PASO 5: Calcular tamaño objetivo (TERCERA CLASE MÁS COMÚN)
+    std::vector<size_t> sizes;
+    for (const auto& action : validClasses) {
+        sizes.push_back(classIndices[action].size());
+    }
+    std::sort(sizes.begin(), sizes.end(), std::greater<size_t>());  // Ordenar descendente
+    
+    // Elegir el tamaño objetivo:
+    // - Si hay >= 3 clases: usar la 3ª más común (percentil ~50%)
+    // - Si hay 2 clases: usar la 2ª (la mínima)
+    // - Si hay 1 clase: no balancear
+    size_t targetSize;
+    if (sizes.size() >= 3) {
+        targetSize = sizes[2];  // Tercera más común
+        std::cout << "\n  → Usando tamaño de la 3ª clase más común: " << targetSize << " muestras\n";
+    } else if (sizes.size() == 2) {
+        targetSize = sizes[1];  // La mínima de las 2
+        std::cout << "\n  → Usando tamaño de la clase minoritaria: " << targetSize << " muestras\n";
+    } else {
+        std::cout << "\n  → Solo 1 clase válida, no se balancea\n";
+        return;  // No balancear si solo hay 1 clase
+    }
+    
+    std::cout << "  → Total clases válidas: " << validClasses.size() << "\n";
+    
+    // PASO 6: Submuestrear cada clase a 'targetSize' (o mantener si es menor)
+    MatDouble_t X_balanced, Y_balanced;
+    std::mt19937 g(std::random_device{}());
+    
+    for (const auto& action : validClasses) {
+        auto indices = classIndices[action];  // Copia
+        std::shuffle(indices.begin(), indices.end(), g);
+        
+        // Tomar hasta 'targetSize' muestras (o todas si son menos)
+        size_t numToTake = std::min(targetSize, indices.size());
+        
+        for (size_t i = 0; i < numToTake; ++i) {
+            size_t idx = indices[i];
+            X_balanced.push_back(X_filtered[idx]);
+            Y_balanced.push_back(Y_filtered[idx]);
+        }
+    }
+    
+    // PASO 7: Mezclar el dataset balanceado
+    std::vector<size_t> allIndices(X_balanced.size());
+    std::iota(allIndices.begin(), allIndices.end(), 0);
+    std::shuffle(allIndices.begin(), allIndices.end(), g);
+    
+    MatDouble_t X_shuffled, Y_shuffled;
+    for (size_t idx : allIndices) {
+        X_shuffled.push_back(X_balanced[idx]);
+        Y_shuffled.push_back(Y_balanced[idx]);
+    }
+    
+    // PASO 8: Reemplazar datos originales
+    X = X_shuffled;
+    Y = Y_shuffled;
+    
+    // PASO 9: Mostrar distribución DESPUÉS
+    std::cout << "\n  Distribución DESPUÉS del balance:\n";
+    std::map<VecDouble_t, int> newCounts;
+    for (const auto& y : Y) {
+        newCounts[y]++;
+    }
+    
+    for (const auto& [action, count] : newCounts) {
+        std::string name = getActionName(action);
+        double pct = (100.0 * count) / Y.size();
+        std::cout << "    " << std::left << std::setw(12) << name 
+                  << ": " << std::right << std::setw(5) << count 
+                  << " (" << std::fixed << std::setprecision(1) << pct << "%)\n";
+    }
+    
+    size_t originalSize = Y_filtered.size();
+    size_t finalSize = Y.size();
+    double reductionPct = 100.0 * (1.0 - (double)finalSize / originalSize);
+    
+    std::cout << "\n  → Total ANTES: " << originalSize << " muestras\n";
+    std::cout << "  → Total DESPUÉS: " << finalSize << " muestras\n";
+    std::cout << "  → Reducción: " << std::fixed << std::setprecision(1) 
+              << reductionPct << "%\n";
+}
+
+// ...existing code... (modificar loadAtari para añadir el balance ANTES del split)
+
+static Dataset loadAtari(const std::string& path, double trainRatio, double valRatio) {
+    std::cout << "Cargando Atari Assault...\n";
+    
+    std::ifstream file(path);
+    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+    
+    std::string line;
+    MatDouble_t Xall, Yall;
+    
+    const int NUM_RAM_FEATURES = 59;
+    const int NUM_ACTIONS = 3;
+    
+    int lineCount = 0;
+    
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        
+        std::stringstream ss(line);
+        std::string value;
+        std::vector<double> features;
+        std::vector<double> actions(NUM_ACTIONS, 0.0);
+        
+        // Leer features de RAM
+        for (int i = 0; i < NUM_RAM_FEATURES; ++i) {
+            if (!std::getline(ss, value, ';')) break;
+            features.push_back(std::stod(value) / 255.0);
+        }
+        
+        // Leer 3 acciones
+        for (int i = 0; i < NUM_ACTIONS; ++i) {
+            if (!std::getline(ss, value, ';')) break;
+            actions[i] = std::stod(value);
+        }
+        
+        if (features.size() == NUM_RAM_FEATURES && actions.size() == NUM_ACTIONS) {
+            Xall.push_back(features);
+            Yall.push_back(actions);
+            lineCount++;
+        }
+    }
+    
+    file.close();
+    
+    std::cout << "  Total muestras cargadas: " << lineCount << "\n";
+    
+    // ========================================================================
+    // BALANCEAR DATASET (modo suave - mantiene más datos)
+    // ========================================================================
+    balanceAtariData(Xall, Yall, 5);  // Mínimo 5 muestras por clase
+    
+    // ========================================================================
+    // SPLIT DESPUÉS DEL BALANCE
+    // ========================================================================
+    Dataset d;
+    d.name = "atari";
+    d.inputSize = NUM_RAM_FEATURES;
+    d.outputSize = NUM_ACTIONS;
+    
+    shuffleSplit3(Xall, Yall, trainRatio, valRatio, 
+                  d.Xtrain, d.Ytrain, d.Xval, d.Yval, d.Xtest, d.Ytest);
+    
+    std::cout << "\n  Split final: Train=" << d.Xtrain.size() 
+              << " Val=" << d.Xval.size() 
+              << " Test=" << d.Xtest.size() << "\n\n";
+    
+    return d;
+}
+
+ 
 // ============================================================================
 // Estructura para guardar información del mejor modelo
 // ============================================================================
@@ -476,8 +656,9 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         dataset = loadWine(dataPath, trainRatio, valRatio);
     } else if (datasetName == "mnist") {
         std::string trainPath = "data/MNIST/train.csv";
-        std::string testPath = "data/MNIST/test.csv";
-        dataset = loadMNIST(trainPath, testPath, trainRatio, valRatio);
+        dataset = loadMNIST(trainPath, trainRatio, valRatio);
+    } else if (datasetName == "atari") {
+        dataset = loadAtari(dataPath, trainRatio, valRatio);
     } else {
         throw std::runtime_error("Dataset no soportado: " + datasetName);
     }
@@ -501,25 +682,33 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
     std::vector<std::vector<int>> architectures;
     int maxEpochs = 100;
     
+    
     if (datasetName == "mnist") {
         architectures = {
-            {784, 128, 10},      // Pequeña
-            {784, 256, 128, 10}, // Mediana
-            {784, 512, 256, 10}  // Grande
+            {784, 128, 10},
+            {784, 256, 128, 10},
+            {784, 512, 256, 10}
         };
         maxEpochs = 30;
+    } else if (datasetName == "atari") {
+        // Arquitecturas específicas para Atari
+        architectures = {
+            {59, 128, 64, 3},      // Mediana
+            {59, 256, 128, 3},     // Grande
+        };
+        maxEpochs = 200;
     } else {
         int in = static_cast<int>(dataset.inputSize);
         int out = static_cast<int>(dataset.outputSize);
         
         architectures = {
-            {in, 20, out},       // Pequeña
-            {in, 50, 20, out},   // Mediana
-            {in, 100, 50, out}   // Grande
+            {in, 20, out},
+            {in, 50, 20, out},
+            {in, 100, 50, out}
         };
     }
     
-    // UNA SOLA ACTIVACIÓN NO LINEAL: RELU (la más usada actualmente)
+    
     ActivationType activation = ActivationType::RELU;
     std::string actName = "RELU";
     
@@ -543,6 +732,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         MLPConfig cfg;
         cfg.layerSizes = arch;
         cfg.activation = activation;
+        cfg.learningRate = 0.01;
         cfg.maxEpochs = 0;
         cfg.verbose = false;
         
@@ -839,6 +1029,7 @@ void usage() {
     std::cout << "  cancer  - Breast Cancer (569 samples, 30 features, 2 classes)\n";
     std::cout << "  wine    - Wine Quality (1599 samples, 11 features, 2 classes)\n";
     std::cout << "  mnist   - MNIST Digits (60000 samples, 784 features, 10 classes)\n\n";
+    std::cout << "  atari   - Atari Assault (manual gameplay, 59 RAM features, 3 actions)\n\n";
     std::cout << "Opciones:\n";
     std::cout << "  --results <path>       Archivo de resultados (default: results/mlp_results.txt)\n";
     std::cout << "  --train-split <0-1>    Ratio de train (default: 0.7)\n";
@@ -871,7 +1062,7 @@ int main(int argc, char** argv) {
     }
     
     // Validar dataset
-    if (dataset != "iris" && dataset != "cancer" && dataset != "wine" && dataset != "mnist") {
+    if (dataset != "iris" && dataset != "cancer" && dataset != "wine" && dataset != "mnist" && dataset != "atari") {
         std::cerr << "ERROR: Dataset '" << dataset << "' no soportado\n\n";
         usage();
         return 1;
@@ -883,20 +1074,14 @@ int main(int argc, char** argv) {
         else if (dataset == "cancer") dataPath = "data/cancermama.csv";
         else if (dataset == "wine") dataPath = "data/winequality-red.csv";
         else if (dataset == "mnist") dataPath = "data/MNIST/train.csv";
+        else if (dataset == "atari") dataPath = "data_manual.csv";
     }
     
     if (!fileExists(dataPath)) {
         std::cerr << "ERROR: No se encontró el archivo: " << dataPath << "\n";
         return 1;
     }
-    
-    if (dataset == "mnist") {
-        std::string testPath = "data/MNIST/test.csv";
-        if (!fileExists(testPath)) {
-            std::cerr << "ERROR: No se encontró " << testPath << "\n";
-            return 1;
-        }
-    }
+
     
     try {
         runExperiments(dataset, dataPath, resultsFile, trainSplit, valSplit);

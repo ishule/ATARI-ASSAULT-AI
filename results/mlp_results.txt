@@ -193,3 +193,68 @@ Train Accuracy: 74.26%
 Val Accuracy: 76.57%
 Test Accuracy: 73.86%
 
+
+
+================================================
+DATASET: iris
+Train: 105 | Val: 22 | Test: 23
+Input: 4 | Output: 3
+================================================
+
+===== FASE 1: Forward Propagation (sin entrenar) =====
+
+Exp 1 | 4-20-3- | Forward Only (pesos aleatorios)
+  Train: 36.19% | Val: 27.27% | Test: 26.09%
+
+
+===== FASE 2: Backpropagation =====
+
+Exp 2 | 4-20-3- | Backpropagation
+  Train: 96.19% | Val: 100.00% | Test: 100.00%
+
+Exp 3 | 4-50-20-3- | Backpropagation
+  Train: 97.14% | Val: 95.45% | Test: 100.00%
+
+Exp 4 | 4-100-50-3- | Backpropagation
+  Train: 97.14% | Val: 95.45% | Test: 100.00%
+
+
+===== FASE 3: Regularización (Dropout) =====
+
+Exp 5 | Dropout=0.30
+  Train: 94.29% | Val: 86.36% | Test: 91.30%
+
+Exp 6 | Dropout=0.50
+  Train: 98.10% | Val: 90.91% | Test: 100.00%
+
+
+===== FASE 4: Regularización (L2) =====
+
+Exp 7 | L2 lambda=0.01
+  Train: 97.14% | Val: 95.45% | Test: 100.00%
+
+Exp 8 | L2 lambda=0.10
+  Train: 97.14% | Val: 95.45% | Test: 95.65%
+
+
+===== FASE 5: Early Stopping =====
+
+Exp 9 | Early Stopping (stopped at epoch 150)
+  Train: 98.10% | Val: 95.45% | Test: 100.00%
+
+Exp 10 | Early Stopping (stopped at epoch 149)
+  Train: 96.19% | Val: 100.00% | Test: 100.00%
+
+
+========================================
+MEJOR MODELO PARA iris
+========================================
+Experimento: 2
+Arquitectura: 4-20-3
+Activación: RELU
+Fase: backprop
+Archivo: models/mlp/iris_exp2_4-20-3_RELU_backprop.txt
+Train Accuracy: 96.19%
+Val Accuracy: 100.00%
+Test Accuracy: 100.00%
+

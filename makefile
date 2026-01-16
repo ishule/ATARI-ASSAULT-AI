@@ -57,3 +57,14 @@ AgentManual: $(AGENT_MANUAL_EXE)
 RunMLP: $(RUN_MLP_EXE)
 
 RunPerceptron: $(RUN_PERCEPTRON_EXE)
+
+
+TrainMLPAtari: src/Main/TrainMLPAtari.cpp src/MLP.cpp src/ActivationFunctions.cpp
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -Iinclude $^ -o bin/TrainMLPAtari
+
+AgentMLPAuto: src/Main/AgentMLPAuto.cpp src/MLP.cpp src/ActivationFunctions.cpp
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -Iinclude -Ilib/ale/src $^ -o bin/AgentMLPAuto -Llib/ale -lale -lSDL
+
+.PHONY: all clean AgentManual RunMLP RunPerceptron TrainMLPAtari AgentMLPAuto

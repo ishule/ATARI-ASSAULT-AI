@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <iomanip>
 
 // ============================================================================
 // CONSTRUCCIÓN E INICIALIZACIÓN
@@ -19,8 +20,22 @@ MLP::MLP(const MLPConfig& cfg) : config(cfg), bestEpoch(0), bestValLoss(1e9) {
 }
 
 MLP::MLP(const std::vector<int>& layers, ActivationType act) : bestEpoch(0), bestValLoss(1e9) {
+    // Inicializar config con valores por defecto
     config.layerSizes = layers;
     config.activation = act;
+    config.learningRate = 0.01;      // ← AÑADIR ESTO
+    config.maxEpochs = 100;           // ← AÑADIR ESTO
+    config.batchSize = 32;            // ← AÑADIR ESTO
+    config.useDropout = false;
+    config.dropoutRate = 0.5;
+    config.useL2 = false;
+    config.l2Lambda = 0.01;
+    config.useEarlyStopping = false;
+    config.patience = 10;
+    config.minDelta = 0.001;
+    config.verbose = true;
+    config.printEvery = 10;
+    
     if (layers.size() < 2) {
         throw std::invalid_argument("Se necesitan al menos 2 capas (entrada y salida)");
     }
@@ -337,7 +352,7 @@ void MLP::train(const MatDouble_t& X, const MatDouble_t& Y,
             std::cout << size << " ";
         }
         std::cout << "\nActivación: " << ActivationFunctions::toString(config.activation) << "\n";
-        std::cout << "Learning Rate: " << config.learningRate << "\n";
+        std::cout << "Learning Rate: " << std::fixed << std::setprecision(2) << config.learningRate << "\n";
         std::cout << "Batch Size: " << config.batchSize << "\n";
         std::cout << "Dropout: " << (config.useDropout ? "Yes (" + std::to_string(config.dropoutRate) + ")" : "No") << "\n";
         std::cout << "L2 Regularization: " << (config.useL2 ? "Yes (lambda=" + std::to_string(config.l2Lambda) + ")" : "No") << "\n";

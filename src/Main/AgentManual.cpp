@@ -44,18 +44,29 @@ vector<int> ramImportant = {//Muy importantes
 
 ALEInterface alei;
 
-// Guardar estado en archivo y depuración de RAM
 void saveState(std::ofstream &file, ALEInterface &alei, Uint8 *keystates) {
-    const auto &RAM = alei.getRAM();
-
-    for (const auto &idx : ramImportant) {
-        int value = static_cast<int>(RAM.get(idx));
-        file << value << splitSymbol;
+    const auto& RAM = alei.getRAM();
+    
+    // Guardar 61 valores de RAM
+    for (int idx : ramImportant) {
+        file << (int)RAM.get(idx) << splitSymbol;
     }
-
-    file << static_cast<int>(keystates[SDLK_SPACE]) << splitSymbol;
-    file << static_cast<int>(keystates[SDLK_LEFT]) << splitSymbol;
-    file << static_cast<int>(keystates[SDLK_RIGHT]) << "\n";
+    
+    // Guardar 3 acciones
+    int fire = (keystates[SDLK_SPACE] || keystates[SDLK_UP]) ? 1 : 0;
+    int left = keystates[SDLK_LEFT] ? 1 : 0;
+    int right = keystates[SDLK_RIGHT] ? 1 : 0;
+    
+    file << fire << splitSymbol << left << splitSymbol << right << "\n";
+    
+    // DEBUG: Imprimir cada 100 frames
+    static int frameCount = 0;
+    if (++frameCount % 100 == 0) {
+        cout << "\rFrame " << frameCount 
+             << " - FIRE:" << fire 
+             << " LEFT:" << left 
+             << " RIGHT:" << right << flush;
+    }
 }
 
 int main(int argc, char **argv) {
@@ -70,7 +81,7 @@ int main(int argc, char **argv) {
     alei.setInt("frame_skip", 0);  // Reducir la velocidad del juego
     alei.loadROM(argv[1]);
 
-    ofstream file("data_manual.csv");
+    ofstream file("data_manual.csv", ios::app);
 
     // Loop Principal del Juego
     for (int step = 0; step < maxSteps && !alei.game_over(); ++step) {
