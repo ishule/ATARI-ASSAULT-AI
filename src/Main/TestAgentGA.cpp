@@ -1,5 +1,6 @@
 #include "GeneticAlgorithm/Individual.hpp"
-#include "ale/ale_interface.hpp"
+#include "ale_interface.hpp"
+#include <SDL/SDL.h>
 #include <iostream>
 #include <vector>
 #include <algorithm> // Para max_element
@@ -50,7 +51,7 @@ int main() {
         const auto& RAM = ale.getRAM();
         state.reserve(ramImportant.size());
         for (int idx : ramImportant) {
-            state.push_back(static_cast<double>(RAM[idx]) / 255.0);
+            state.push_back(static_cast<double>(RAM.get(idx)) / 255.0);
         }
 
         // B. El agente piensa

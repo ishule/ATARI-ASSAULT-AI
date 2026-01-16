@@ -4,9 +4,24 @@
 #include <random>
 #include <algorithm>
 using namespace std;
-Perceptron::Perceptron(int numInputs, int numOutputs)
-    : weights(numOutputs, VecDouble_t(numInputs + 1, 0.0)) {}  // Inicializar pesos a 0
+Perceptron::Perceptron(int numInputs, int numOutputs) {
+    // Inicializamos el generador de números aleatorios
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    
+    std::uniform_real_distribution<> dis(-0.05, 0.05);
 
+    // Redimensionamos la matriz de pesos
+    weights.resize(numOutputs);
+    for (int i = 0; i < numOutputs; ++i) {
+        weights[i].resize(numInputs + 1); //bias
+        
+        for (int j = 0; j < numInputs + 1; ++j) {
+            // Asignamos un peso aleatorio en lugar de 0.0
+            weights[i][j] = dis(gen);
+        }
+    }
+}
 void Perceptron::load(const string& filepath) {
     ifstream file(filepath);
     if (!file) throw runtime_error("No se pudo abrir el archivo: " + filepath);

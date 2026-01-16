@@ -1,4 +1,4 @@
-#include "Normalize.hpp"
+#include "Utils/Normalize.hpp"
 #include <fstream>
 #include <cmath>
 #include <stdexcept>
