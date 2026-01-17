@@ -258,3 +258,65 @@ Train Accuracy: 96.19%
 Val Accuracy: 100.00%
 Test Accuracy: 100.00%
 
+
+
+================================================
+DATASET: atari
+Train: 7681 | Val: 1645 | Test: 1647
+Input: 80 | Output: 3
+================================================
+
+===== FASE 1: Forward Propagation (sin entrenar) =====
+
+Exp 1 | 80-128-64-3- | Forward Only (pesos aleatorios)
+  Train: 63.64% | Val: 64.21% | Test: 64.68%
+
+
+===== FASE 2: Backpropagation =====
+
+Exp 2 | 80-128-64-3- | Backpropagation
+  Train: 94.95% | Val: 94.91% | Test: 94.25%
+
+Exp 3 | 80-256-128-3- | Backpropagation
+  Train: 95.14% | Val: 94.87% | Test: 94.52%
+
+
+===== FASE 3: Regularización (Dropout) =====
+
+Exp 4 | Dropout=0.30
+  Train: 95.20% | Val: 94.59% | Test: 94.41%
+
+Exp 5 | Dropout=0.50
+  Train: 93.89% | Val: 94.02% | Test: 93.54%
+
+
+===== FASE 4: Regularización (L2) =====
+
+Exp 6 | L2 lambda=0.01
+  Train: 86.20% | Val: 86.69% | Test: 86.30%
+
+Exp 7 | L2 lambda=0.10
+  Train: 92.56% | Val: 92.89% | Test: 92.15%
+
+
+===== FASE 5: Early Stopping =====
+
+Exp 8 | Early Stopping (stopped at epoch 140)
+  Train: 94.58% | Val: 94.65% | Test: 94.07%
+
+Exp 9 | Early Stopping (stopped at epoch 149)
+  Train: 94.96% | Val: 94.75% | Test: 94.45%
+
+
+========================================
+MEJOR MODELO PARA atari
+========================================
+Experimento: 3
+Arquitectura: 80-256-128-3
+Activación: RELU
+Fase: backprop
+Archivo: models/mlp/atari_exp3_80-256-128-3_RELU_backprop.txt
+Train Accuracy: 95.14%
+Val Accuracy: 94.87%
+Test Accuracy: 94.52%
+

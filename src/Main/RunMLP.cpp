@@ -569,7 +569,7 @@ static Dataset loadAtari(const std::string& path, double trainRatio, double valR
     std::string line;
     MatDouble_t Xall, Yall;
     
-    const int NUM_RAM_FEATURES = 59;
+    const int NUM_RAM_FEATURES = 80;
     const int NUM_ACTIONS = 3;
     
     int lineCount = 0;
@@ -693,8 +693,8 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
     } else if (datasetName == "atari") {
         // Arquitecturas específicas para Atari
         architectures = {
-            {59, 128, 64, 3},      // Mediana
-            {59, 256, 128, 3},     // Grande
+            {80, 128, 64, 3},      // Mediana
+            {80, 256, 128, 3},     // Grande
         };
         maxEpochs = 200;
     } else {
@@ -741,6 +741,11 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
         double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
         double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+
+        std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
+        model->save(currentFilename);
+        std::cout << "  ✓ Modelo guardado: " << currentFilename << "\n";
+    
         
         if (testAcc > bestModel.testAcc) {
             if (bestModel.model) delete bestModel.model;
@@ -792,6 +797,12 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
         double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
         double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+
+
+        std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
+        model->save(currentFilename);
+        std::cout << "  ✓ Modelo guardado: " << currentFilename << "\n";
+    
         
         if (testAcc > bestModel.testAcc) {
             if (bestModel.model) delete bestModel.model;
@@ -1074,7 +1085,7 @@ int main(int argc, char** argv) {
         else if (dataset == "cancer") dataPath = "data/cancermama.csv";
         else if (dataset == "wine") dataPath = "data/winequality-red.csv";
         else if (dataset == "mnist") dataPath = "data/MNIST/train.csv";
-        else if (dataset == "atari") dataPath = "data_manual.csv";
+        else if (dataset == "atari") dataPath = "data/data_manual_01.csv";
     }
     
     if (!fileExists(dataPath)) {
