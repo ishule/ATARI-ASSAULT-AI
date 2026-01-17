@@ -23,9 +23,9 @@ MLP::MLP(const std::vector<int>& layers, ActivationType act) : bestEpoch(0), bes
     // Inicializar config con valores por defecto
     config.layerSizes = layers;
     config.activation = act;
-    config.learningRate = 0.01;      // ← AÑADIR ESTO
-    config.maxEpochs = 100;           // ← AÑADIR ESTO
-    config.batchSize = 32;            // ← AÑADIR ESTO
+    config.learningRate = 0.01;      
+    config.maxEpochs = 100;           
+    config.batchSize = 32;            
     config.useDropout = false;
     config.dropoutRate = 0.5;
     config.useL2 = false;
@@ -42,6 +42,8 @@ MLP::MLP(const std::vector<int>& layers, ActivationType act) : bestEpoch(0), bes
     initializeWeights();
 }
 
+
+// Inicializa los pesos con Xavier/Glorot
 void MLP::initializeWeights() {
     weights.clear();
     biases.clear();
@@ -105,7 +107,7 @@ VecDouble_t MLP::forwardPass(const VecDouble_t& input, bool training) const {
         bool isOutputLayer = (layer == weights.size() - 1);
         
         if (isOutputLayer) {
-            // ✅ Multi-label: Sigmoid independiente en cada salida
+            // Multi-label: Sigmoid independiente en cada salida
             for (size_t j = 0; j < z.size(); ++j) {
                 activated[j] = ActivationFunctions::apply(z[j], ActivationType::SIGMOID);
             }
@@ -170,7 +172,7 @@ void MLP::computeGradients(const VecDouble_t& x, const VecDouble_t& y,
     // Calcular error de salida (delta de la última capa)
     VecDouble_t delta = layerOutputs.back();
        
-    // ✅ Para MSE + Sigmoid: delta = (y_pred - y_true) * sigmoid'(z)
+    // Para MSE + Sigmoid: delta = (y_pred - y_true) * sigmoid'(z)
     // sigmoid'(z) = sigmoid(z) * (1 - sigmoid(z))
     for (size_t i = 0; i < delta.size(); ++i) {
         double y_pred = delta[i];
@@ -236,7 +238,6 @@ void MLP::applyL2Regularization(std::vector<MatDouble_t>& weightGrads) {
     }
 }
 
-// En MLP.cpp - función updateWeights()
 void MLP::updateWeights(const std::vector<MatDouble_t>& weightGrads,
                        const std::vector<VecDouble_t>& biasGrads,
                        size_t batchSize) {

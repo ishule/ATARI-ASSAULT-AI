@@ -62,7 +62,6 @@ public:
 
     explicit MLP(const MLPConfig& cfg);
     
-    //Constructor simple (compatibilidad)
     MLP(const std::vector<int>& layers, ActivationType act = ActivationType::SIGMOID);
     
     ~MLP() override = default;
@@ -99,7 +98,7 @@ private:
     //Backpropagation - actualiza pesos y bias
     void backpropagate(const MatDouble_t& X, const MatDouble_t& Y);
     
-    //Calcula el loss (MSE o Cross-Entropy)
+    //Calcula el loss
     double calculateLoss(const MatDouble_t& X, const MatDouble_t& Y) const;
     
     //Calcula gradientes para una muestra

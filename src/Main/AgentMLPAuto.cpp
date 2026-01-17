@@ -119,18 +119,18 @@ Action mlpOutputToAction(const vector<double>& output) {
     double left = output[1];
     double right = output[2];
     
-    // ✅ Umbral adaptativo
+    // Umbral adaptativo de prueba y error
     const double FIRE_THRESHOLD = 0.4;
     const double MOVE_THRESHOLD = 0.5;
     
     bool should_fire = (fire > FIRE_THRESHOLD);
     
-    // ✅ Decidir movimiento (LEFT vs RIGHT vs NOOP)
+    // Decidir movimiento (LEFT vs RIGHT vs NOOP)
     double move_diff = abs(left - right);
     
     Action movement = PLAYER_A_NOOP;
     
-    if (move_diff > 0.1) {  // Diferencia significativa
+    if (move_diff > 0.1) { 
         if (left > right && left > MOVE_THRESHOLD) {
             movement = PLAYER_A_LEFT;
         } else if (right > left && right > MOVE_THRESHOLD) {
@@ -138,7 +138,7 @@ Action mlpOutputToAction(const vector<double>& output) {
         }
     }
     
-    // ✅ Combinar FIRE + movimiento
+    // Combinar FIRE + movimiento
     if (should_fire) {
         if (movement == PLAYER_A_LEFT) return PLAYER_A_LEFTFIRE;
         if (movement == PLAYER_A_RIGHT) return PLAYER_A_RIGHTFIRE;
@@ -159,9 +159,9 @@ int main(int argc, char** argv) {
     
     // Cargar modelo MLP
     cout << "Cargando modelo: " << modelPath << "\n";
-    MLP mlp({80, 128, 64, 3}); // Arquitectura debe coincidir
+    MLP mlp({80, 128, 64, 3}); // Usamos esta arquitectura que es la de backtracking (segundo entrenamiento de RunMLP)
     mlp.load(modelPath);
-    cout << "✓ Modelo cargado\n\n";
+    cout << "Modelo cargado\n\n";
     
     // Configurar ALE
     ALEInterface ale;
@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
         int steps = 0;
         int totalReward = 0;
 
-        cout << "Episodio " << (episode + 1) << "/" << MAX_EPISODES << " - ";
+        cout << "Test " << (episode + 1) << "/" << MAX_EPISODES << " - ";
         
         while (!ale.game_over() && steps < 10000) {
             // 1. Extraer features de RAM
@@ -208,6 +208,6 @@ int main(int argc, char** argv) {
     }
     
     cout << "Media: " << (sumReward / MAX_EPISODES) << "\n";
-    cout << "\n✓ Finalizado\n";
+    cout << "\nFinalizado\n";
     return 0;
 }

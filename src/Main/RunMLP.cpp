@@ -9,6 +9,7 @@
 #include <cmath>
 #include <map>
 
+// Crea un directorio si no existe
 static void createDirectory(const std::string& path) {
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {
@@ -25,6 +26,13 @@ static bool fileExists(const std::string& path) {
     return f.good();
 }
 
+/* Genera un nombre de archivo para guardar modelos entrenados dependiendo de:
+    - Dataset
+    - Número de experimento
+    - Arquitectura
+    - Función de activación
+    - Fase (forward, backward, earlystop ...)
+*/
 static std::string generateModelFilename(const std::string& dataset,
                                         const std::vector<int>& arch,
                                         const std::string& activation,
@@ -47,6 +55,7 @@ static std::string generateModelFilename(const std::string& dataset,
     return ss.str();
 }
 
+// Divide dataset en train/val/test con shuffle de forma aleatoria
 static void shuffleSplit3(const MatDouble_t& X, const MatDouble_t& Y,
                           double trainRatio, double valRatio,
                           MatDouble_t& Xtrain, MatDouble_t& Ytrain,
@@ -75,12 +84,15 @@ static void shuffleSplit3(const MatDouble_t& X, const MatDouble_t& Y,
     }
 }
 
+// FUNCIONES DE CARGA DE DATASETS
+
 struct Dataset {
     MatDouble_t Xtrain, Ytrain, Xval, Yval, Xtest, Ytest;
     size_t inputSize, outputSize;
     std::string name;
 };
 
+// Cargar dataset Iris desde CSV
 static Dataset loadIris(const std::string& path, double trainRatio, double valRatio) {
     std::ifstream file(path);
     if (!file) throw std::runtime_error("No se pudo abrir " + path);
@@ -122,6 +134,9 @@ static Dataset loadIris(const std::string& path, double trainRatio, double valRa
     return d;
 }
 
+
+// Carga dataset Cancer desde CSV
+// Aplica normalización z-score a los features porque es crítico para este dataset ya que las features tienen escalas muy diferentes
 static Dataset loadCancer(const std::string& path, double trainRatio, double valRatio) {
     std::ifstream file(path);
     if (!file) throw std::runtime_error("No se pudo abrir " + path);
@@ -153,9 +168,7 @@ static Dataset loadCancer(const std::string& path, double trainRatio, double val
 
     std::cout << "Cancer cargado: " << Xall.size() << " muestras\n";
 
-    // ============================================================
-    // NORMALIZACIÓN (z-score) - CRÍTICO PARA CANCER
-    // ============================================================
+    // Normalización (z-score) 
     if (!Xall.empty()) {
         const size_t numFeatures = 30;
         std::vector<double> means(numFeatures, 0.0);
@@ -204,6 +217,8 @@ static Dataset loadCancer(const std::string& path, double trainRatio, double val
     return d;
 }
 
+// Carga dataset Wine desde CSV
+// Convierte quality en clasificación binaria (good vs bad)
 static Dataset loadWine(const std::string& path, double trainRatio, double valRatio) {
     std::ifstream file(path);
     if (!file) throw std::runtime_error("No se pudo abrir " + path);
@@ -253,9 +268,7 @@ static Dataset loadWine(const std::string& path, double trainRatio, double valRa
     std::cout << "  Bad (quality<6): " << countBad << " (" << (100.0*countBad/Xall.size()) << "%)\n";
     std::cout << "  Good (quality>=6): " << countGood << " (" << (100.0*countGood/Xall.size()) << "%)\n";
 
-    // ============================================================
-    // NORMALIZACIÓN (importante para Wine)
-    // ============================================================
+    // Normalización (z-score)
     if (!Xall.empty()) {
         size_t numFeatures = Xall[0].size();
         
@@ -304,7 +317,8 @@ static Dataset loadWine(const std::string& path, double trainRatio, double valRa
     return d;
 }
 
-
+// Carga dataset MNIST desde CSV
+// Normaliza píxeles a [0,1] y aplica one-hot encoding a labels
 static Dataset loadMNIST(const std::string& trainPath,
                         double trainRatio, double valRatio) {
     std::cout << "Cargando MNIST...\n";
@@ -314,9 +328,7 @@ static Dataset loadMNIST(const std::string& trainPath,
     d.inputSize = 784;
     d.outputSize = 10;
     
-    // ========================================================================
-    // Cargar SOLO train.csv (que SÍ tiene labels)
-    // ========================================================================
+    // Cargamos solo train.csv (que SÍ tiene labels) a diferencia de test.csv
     std::ifstream trainFile(trainPath);
     if (!trainFile) throw std::runtime_error("No se pudo abrir " + trainPath);
     
@@ -362,9 +374,7 @@ static Dataset loadMNIST(const std::string& trainPath,
     trainFile.close();
     std::cout << " " << count << " muestras\n";
     
-    // ========================================================================
-    // Dividir en Train / Val / Test (ignorar test.csv sin labels)
-    // ========================================================================
+    // Tenemos que dividir en Train / Val / Test
     std::vector<size_t> idx(Xall.size());
     for (size_t i = 0; i < idx.size(); ++i) idx[i] = i;
     std::mt19937 g(std::random_device{}());
@@ -394,16 +404,14 @@ static Dataset loadMNIST(const std::string& trainPath,
     return d;
 }
 
-// ...existing code... (después de shuffleSplit3, ANTES de loadAtari)
 
-// ============================================================================
-// BALANCEO SUAVE PARA ATARI (mantiene más datos)
-// ============================================================================
-
+// Balanceo extra para el dataset de Atari Assault
+// El balanceo consiste principalmente en ajustar el número de muestras por clase (acción) a la tercera clase más común
+// De esta forma evitamos que las clases más comunes (sobre todo la clase NOOP) dominen el entrenamiento
 static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPerClass = 5) {
     std::cout << "\n=== BALANCEANDO DATASET DE ATARI (modo suave) ===\n";
     
-    // PASO 1: Filtrar acciones inválidas [0,1,1]
+    // Paso 1: Filtrar acciones inválidas [0,1,1] (LEFT + RIGHT simultáneamente)
     MatDouble_t X_filtered, Y_filtered;
     int invalidCount = 0;
     
@@ -421,7 +429,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
                   << " muestras con conflicto [0,1,1]\n";
     }
     
-    // PASO 2: Agrupar por clase
+    // Paso 2: Agrupar por clase (acción)
     std::map<VecDouble_t, std::vector<size_t>> classIndices;
     
     for (size_t i = 0; i < Y_filtered.size(); ++i) {
@@ -438,7 +446,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
         else return "NOOP";
     };
     
-    // PASO 3: Mostrar distribución ANTES
+    // Paso 3: Mostrar distribución antes del balance
     std::cout << "\n  Distribución ANTES del balance:\n";
     std::vector<std::pair<std::string, size_t>> classSizes;
     
@@ -454,7 +462,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
         classSizes.push_back({name, count});
     }
     
-    // PASO 4: Filtrar clases con muy pocas muestras
+    // Paso 4: Filtrar clases con muy pocas muestras
     std::vector<VecDouble_t> validClasses;
     std::cout << "\n  Clases válidas (>= " << minSamplesPerClass << " muestras):\n";
     
@@ -475,7 +483,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
         throw std::runtime_error("No hay clases válidas después del filtrado");
     }
     
-    // PASO 5: Calcular tamaño objetivo (TERCERA CLASE MÁS COMÚN)
+    // Paso 5: Calcular tamaño objetivo (tercera clase más común)
     std::vector<size_t> sizes;
     for (const auto& action : validClasses) {
         sizes.push_back(classIndices[action].size());
@@ -500,7 +508,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
     
     std::cout << "  → Total clases válidas: " << validClasses.size() << "\n";
     
-    // PASO 6: Submuestrear cada clase a 'targetSize' (o mantener si es menor)
+    // Paso 6: Submuestrear cada clase a 'targetSize' (o mantener si es menor)
     MatDouble_t X_balanced, Y_balanced;
     std::mt19937 g(std::random_device{}());
     
@@ -518,7 +526,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
         }
     }
     
-    // PASO 7: Mezclar el dataset balanceado
+    // Paso 7: Mezclar el dataset balanceado
     std::vector<size_t> allIndices(X_balanced.size());
     std::iota(allIndices.begin(), allIndices.end(), 0);
     std::shuffle(allIndices.begin(), allIndices.end(), g);
@@ -529,11 +537,11 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
         Y_shuffled.push_back(Y_balanced[idx]);
     }
     
-    // PASO 8: Reemplazar datos originales
+    // Paso 8: Reemplazar datos originales
     X = X_shuffled;
     Y = Y_shuffled;
     
-    // PASO 9: Mostrar distribución DESPUÉS
+    // Paso 9: Mostrar distribución después del balance
     std::cout << "\n  Distribución DESPUÉS del balance:\n";
     std::map<VecDouble_t, int> newCounts;
     for (const auto& y : Y) {
@@ -558,8 +566,9 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
               << reductionPct << "%\n";
 }
 
-// ...existing code... (modificar loadAtari para añadir el balance ANTES del split)
 
+// Carga dataset Atari Assault desde CSV
+// Lee el CSV, normaliza features de RAM a [0,1], aplica balanceo y split
 static Dataset loadAtari(const std::string& path, double trainRatio, double valRatio) {
     std::cout << "Cargando Atari Assault...\n";
     
@@ -605,14 +614,9 @@ static Dataset loadAtari(const std::string& path, double trainRatio, double valR
     
     std::cout << "  Total muestras cargadas: " << lineCount << "\n";
     
-    // ========================================================================
-    // BALANCEAR DATASET (modo suave - mantiene más datos)
-    // ========================================================================
     balanceAtariData(Xall, Yall, 5);  // Mínimo 5 muestras por clase
     
-    // ========================================================================
-    // SPLIT DESPUÉS DEL BALANCE
-    // ========================================================================
+    // Split (train/val/test)
     Dataset d;
     d.name = "atari";
     d.inputSize = NUM_RAM_FEATURES;
@@ -629,9 +633,7 @@ static Dataset loadAtari(const std::string& path, double trainRatio, double valR
 }
 
  
-// ============================================================================
 // Estructura para guardar información del mejor modelo
-// ============================================================================
 struct BestModel {
     double trainAcc = 0.0;
     double valAcc = 0.0;
@@ -644,6 +646,15 @@ struct BestModel {
     MLP* model = nullptr;
 };
 
+
+/* Función principal para ejecutar experimentos con MLP en un dataset dado. Está dividida en varias fases:
+    1. Forward propagation only (sin entrenamiento): crea un modelo sin entrenar (pesos aleatorios)
+    2. Backward propagation (entrenamiento estándar): entrena el modelo con backpropagation y RELU
+    3. Regularización con Dropout: entrena con dropour (0.3 y 0.5) para prevenir overfitting
+    4. Regularización L2 (lambda=0.01 y 0.1): entrena con regularización L2 para prevenir overfitting
+    5. Early Stopping: entrena con early stopping basado en validación
+    6. Mejor modelo global: guarda el mejor modelo obtenido en todas las fases
+*/
 void runExperiments(const std::string& datasetName, const std::string& dataPath,
                    const std::string& resultsFile, double trainRatio, double valRatio) {
     
@@ -676,12 +687,9 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
     results << "Input: " << dataset.inputSize << " | Output: " << dataset.outputSize << "\n";
     results << "================================================\n\n";
     
-    // ========================================================================
-    // ARQUITECTURAS SIMPLIFICADAS
-    // ========================================================================
+    // Ajuste de arquitecturas y parámetros según dataset
     std::vector<std::vector<int>> architectures;
     int maxEpochs = 100;
-    
     
     if (datasetName == "mnist") {
         architectures = {
@@ -715,9 +723,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
     int expNum = 0;
     BestModel bestModel;
     
-    // ========================================================================
-    // FASE 1: Forward Propagation Only (sin entrenamiento)
-    // ========================================================================
+    // Fase 1
     results << "===== FASE 1: Forward Propagation (sin entrenar) =====\n\n";
     
     // Solo probar 1 arquitectura para ver pesos aleatorios
@@ -744,7 +750,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
 
         std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
         model->save(currentFilename);
-        std::cout << "  ✓ Modelo guardado: " << currentFilename << "\n";
+        std::cout << "  Modelo guardado: " << currentFilename << "\n";
     
         
         if (testAcc > bestModel.testAcc) {
@@ -770,9 +776,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         results << "Test: " << testAcc << "%\n\n";
     }
     
-    // ========================================================================
-    // FASE 2: Backpropagation (3 arquitecturas)
-    // ========================================================================
+    // Fase 2
     results << "\n===== FASE 2: Backpropagation =====\n\n";
     
     for (auto& arch : architectures) {
@@ -801,7 +805,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
 
         std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
         model->save(currentFilename);
-        std::cout << "  ✓ Modelo guardado: " << currentFilename << "\n";
+        std::cout << "  Modelo guardado: " << currentFilename << "\n";
     
         
         if (testAcc > bestModel.testAcc) {
@@ -830,9 +834,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
                   << "% Test=" << testAcc << "%\n";
     }
     
-    // ========================================================================
-    // FASE 3: Regularización con Dropout (1 arquitectura, 2 dropout rates)
-    // ========================================================================
+    // Fase 3
     results << "\n===== FASE 3: Regularización (Dropout) =====\n\n";
     
     auto& arch_reg = architectures[1];  // Arquitectura mediana
@@ -887,9 +889,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         results << "Test: " << testAcc << "%\n\n";
     }
     
-    // ========================================================================
-    // FASE 4: Regularización L2 (1 arquitectura, 2 lambdas)
-    // ========================================================================
+    // Fase 4
     results << "\n===== FASE 4: Regularización (L2) =====\n\n";
     
     std::vector<double> l2Lambdas = {0.01, 0.1};
@@ -941,9 +941,7 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         results << "Test: " << testAcc << "%\n\n";
     }
     
-    // ========================================================================
-    // FASE 5: Early Stopping (2 arquitecturas)
-    // ========================================================================
+    // Fase 5
     results << "\n===== FASE 5: Early Stopping =====\n\n";
     
     for (size_t i = 0; i < 2; ++i) {  // Pequeña y mediana
