@@ -84,12 +84,12 @@ static inline bool safe_int_zero(const string &s) {
     }
 }
 
-bool is_noop_row(const string &line) {
+bool is_noshot_row(const string &line) {
     auto fields = split_fields(line, SEP);
     if (fields.size() < 3) return false;
     // look at last 3 fields
     size_t n = fields.size();
-    return safe_int_zero(fields[n - 1]) && safe_int_zero(fields[n - 2]) && safe_int_zero(fields[n - 3]);
+    return safe_int_zero(fields[n - 3]) && (!safe_int_zero(fields[n - 2]) || !safe_int_zero(fields[n - 1]));
 }
 
 void usage(const char *prog) {
@@ -173,20 +173,20 @@ int main(int argc, char **argv) {
     int header_index = -1;
     if (has_header) header_index = 0;
 
-    // Find indices of noop rows (excluding header if present)
-    vector<int> noop_indices;
+    // Find indices of noshot rows (excluding header if present)
+    vector<int> noshot_indices;
     for (size_t i = 0; i < lines.size(); ++i) {
         if (static_cast<int>(i) == header_index) continue;
-        if (is_noop_row(lines[i])) noop_indices.push_back(static_cast<int>(i));
+        if (is_noshot_row(lines[i])) noshot_indices.push_back(static_cast<int>(i));
     }
 
     const int total_rows = static_cast<int>(lines.size());
-    const int total_noop = static_cast<int>(noop_indices.size());
-    const int remove_count = static_cast<int>(round(total_noop * (percent / 100.0)));
+    const int total_noshot = static_cast<int>(noshot_indices.size());
+    const int remove_count = static_cast<int>(round(total_noshot * (percent / 100.0)));
 
     // select random subset to remove
     vector<int> to_remove;
-    if (remove_count > 0 && total_noop > 0) {
+    if (remove_count > 0 && total_noshot > 0) {
         std::mt19937 rng;
         if (have_seed) rng.seed(seed);
         else {
@@ -194,8 +194,8 @@ int main(int argc, char **argv) {
             rng.seed(rd());
         }
         // shuffle indices and take first remove_count
-        shuffle(noop_indices.begin(), noop_indices.end(), rng);
-        to_remove.assign(noop_indices.begin(), noop_indices.begin() + remove_count);
+        shuffle(noshot_indices.begin(), noshot_indices.end(), rng);
+        to_remove.assign(noshot_indices.begin(), noshot_indices.begin() + remove_count);
     }
     // make set for fast lookup
     unordered_set<int> remove_set(to_remove.begin(), to_remove.end());
@@ -223,9 +223,9 @@ int main(int argc, char **argv) {
     cout << "  input file:            " << input << '\n';
     cout << "  output file:           " << output << '\n';
     cout << "  total rows (non-empty):" << total_rows << '\n';
-    cout << "  detected no-op rows:   " << total_noop << '\n';
+    cout << "  detected no-shot rows:   " << total_noshot << '\n';
     cout << "  percent requested:     " << percent << "%\n";
-    cout << "  no-op rows removed:    " << removed << '\n';
+    cout << "  no-shot rows removed:    " << removed << '\n';
     cout << "  rows written:          " << written << '\n';
 
     return 0;
