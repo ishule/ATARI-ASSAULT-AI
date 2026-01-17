@@ -30,7 +30,6 @@ vector<int> ramImportant = {
     0x1D, 
     0x1E, 
     0x1F, 
-    0x1D, 
     0x21, 
     0x22, 
     0x23, 
@@ -160,7 +159,7 @@ int main(int argc, char** argv) {
     
     // Cargar modelo MLP
     cout << "Cargando modelo: " << modelPath << "\n";
-    MLP mlp({61, 128, 64, 3}); // Arquitectura debe coincidir
+    MLP mlp({80, 128, 64, 3}); // Arquitectura debe coincidir
     mlp.load(modelPath);
     cout << "✓ Modelo cargado\n\n";
     
@@ -175,12 +174,14 @@ int main(int argc, char** argv) {
     
     int episode = 0;
     const int MAX_EPISODES = 10;
+    int sumReward = 0;
+
     
     while (episode < MAX_EPISODES) {
         ale.reset_game();
-        int totalReward = 0;
         int steps = 0;
-        
+        int totalReward = 0;
+
         cout << "Episodio " << (episode + 1) << "/" << MAX_EPISODES << " - ";
         
         while (!ale.game_over() && steps < 10000) {
@@ -202,9 +203,11 @@ int main(int argc, char** argv) {
         }
         
         cout << "Score: " << totalReward << " (steps: " << steps << ")\n";
+        sumReward += totalReward;
         episode++;
     }
     
+    cout << "Media: " << (sumReward / MAX_EPISODES) << "\n";
     cout << "\n✓ Finalizado\n";
     return 0;
 }

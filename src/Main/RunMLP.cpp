@@ -1085,7 +1085,7 @@ int main(int argc, char** argv) {
         else if (dataset == "cancer") dataPath = "data/cancermama.csv";
         else if (dataset == "wine") dataPath = "data/winequality-red.csv";
         else if (dataset == "mnist") dataPath = "data/MNIST/train.csv";
-        else if (dataset == "atari") dataPath = "data/data_manual_01.csv";
+        else if (dataset == "atari") dataPath = "datasets_juntos.csv";
     }
     
     if (!fileExists(dataPath)) {
