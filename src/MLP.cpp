@@ -105,20 +105,18 @@ VecDouble_t MLP::forwardPass(const VecDouble_t& input, bool training) const {
         bool isOutputLayer = (layer == weights.size() - 1);
         
         if (isOutputLayer) {
-            // Capa de salida: usar sigmoid para binario o softmax para multiclase
-            if (z.size() == 1) {
-                activated[0] = ActivationFunctions::apply(z[0], ActivationType::SIGMOID);
-            } else {
-                activated = ActivationFunctions::softmax(z);
+            // ✅ Multi-label: Sigmoid independiente en cada salida
+            for (size_t j = 0; j < z.size(); ++j) {
+                activated[j] = ActivationFunctions::apply(z[j], ActivationType::SIGMOID);
             }
         } else {
-            // Capas ocultas: usar la activación configurada
+            // Capas ocultas: usar RELU
             for (size_t j = 0; j < z.size(); ++j) {
-                activated[j] = ActivationFunctions::apply(z[j], config.activation);
+                activated[j] = ActivationFunctions::apply(z[j], ActivationType::RELU);
             }
             
-            // Aplicar dropout en entrenamiento
-            if (training && config.useDropout && layer < weights.size() - 1) {
+            // Dropout solo en capas ocultas
+            if (training && config.useDropout) {
                 applyDropout(activated, layer, training);
             }
         }
@@ -171,10 +169,15 @@ void MLP::computeGradients(const VecDouble_t& x, const VecDouble_t& y,
     
     // Calcular error de salida (delta de la última capa)
     VecDouble_t delta = layerOutputs.back();
-    
-    // Para MSE: delta = (y_pred - y_true)
+       
+    // ✅ Para MSE + Sigmoid: delta = (y_pred - y_true) * sigmoid'(z)
+    // sigmoid'(z) = sigmoid(z) * (1 - sigmoid(z))
     for (size_t i = 0; i < delta.size(); ++i) {
-        delta[i] -= y[i];
+        double y_pred = delta[i];
+        double y_true = y[i];
+        
+        // Derivada simplificada de BCE + Sigmoid
+        delta[i] = y_pred - y_true;
     }
     
     // Backpropagation hacia atrás
@@ -310,19 +313,24 @@ void MLP::backpropagate(const MatDouble_t& X, const MatDouble_t& Y) {
 
 double MLP::calculateLoss(const MatDouble_t& X, const MatDouble_t& Y) const {
     double totalLoss = 0.0;
+    const double epsilon = 1e-7;  // Para evitar log(0)
     
     for (size_t i = 0; i < X.size(); ++i) {
         auto pred = predict(X[i]);
         
-        // MSE
+        // Binary Cross-Entropy (mejor para multi-label)
         for (size_t j = 0; j < pred.size(); ++j) {
-            double error = pred[j] - Y[i][j];
-            totalLoss += error * error;
+            double p = std::max(epsilon, std::min(1.0 - epsilon, pred[j]));
+            double y = Y[i][j];
+            
+            // BCE = -[y*log(p) + (1-y)*log(1-p)]
+            totalLoss += -(y * std::log(p) + (1.0 - y) * std::log(1.0 - p));
         }
     }
     
     return totalLoss / X.size();
 }
+
 
 bool MLP::checkEarlyStopping(double valLoss, int epoch) {
     if (!config.useEarlyStopping) return false;
@@ -476,46 +484,27 @@ void MLP::load(const std::string& filepath) {
     file.close();
 }
 
+
 double MLP::evaluate(const MatDouble_t& X, const MatDouble_t& Y) const {
     if (X.empty() || Y.empty()) return 0.0;
     
-    int correct = 0;
+    int totalCorrect = 0;
+    int totalLabels = X.size() * Y[0].size();
     
     for (size_t i = 0; i < X.size(); ++i) {
         std::vector<double> pred = predict(X[i]);
         
-        // Para clasificación binaria (1 salida)
-        if (Y[i].size() == 1) {
-            int predClass = (pred[0] > 0.5) ? 1 : 0;
-            int realClass = (int)(Y[i][0] + 0.5);  // Round
+        // Multi-label: comparar cada etiqueta independientemente
+        for (size_t j = 0; j < pred.size(); ++j) {
+            int predLabel = (pred[j] > 0.5) ? 1 : 0;
+            int realLabel = (int)(Y[i][j] + 0.5);  // Round
             
-            if (predClass == realClass) correct++;
-        }
-        // Para multiclase (>1 salidas)
-        else {
-            // Encontrar clase predicha (max de las salidas)
-            int predClass = 0;
-            double maxPred = pred[0];
-            for (size_t j = 1; j < pred.size(); ++j) {
-                if (pred[j] > maxPred) {
-                    maxPred = pred[j];
-                    predClass = j;
-                }
+            if (predLabel == realLabel) {
+                totalCorrect++;
             }
-            
-            // Encontrar clase real (max de Y)
-            int realClass = 0;
-            double maxReal = Y[i][0];
-            for (size_t j = 1; j < Y[i].size(); ++j) {
-                if (Y[i][j] > maxReal) {
-                    maxReal = Y[i][j];
-                    realClass = j;
-                }
-            }
-            
-            if (predClass == realClass) correct++;
         }
     }
     
-    return (100.0 * correct) / X.size();
+    // Accuracy = (etiquetas correctas) / (total de etiquetas)
+    return (100.0 * totalCorrect) / totalLabels;
 }
