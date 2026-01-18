@@ -45,10 +45,7 @@ Individual& Individual::operator=(const Individual& other) {
     return *this;
 }
 
-// ============================================
 // INICIALIZACIÓN DE PESOS (Xavier/Glorot)
-// ============================================
-
 void Individual::initializeRandomWeights() {
     weights_.clear();
     biases_.clear();
@@ -106,7 +103,7 @@ Individual Individual::crossover(const Individual& other, double mutationRate) c
             layerWeights[j].resize(weights_[layer][j].size());
             
             for (size_t k = 0; k < weights_[layer][j].size(); ++k) {
-                // 1. HEREDAR de un padre (50/50)
+                // jeredar de un padre (50/50)
                 double inheritedWeight;
                 if (prob(gen) < 0.5) {
                     inheritedWeight = weights_[layer][j][k];
@@ -114,7 +111,7 @@ Individual Individual::crossover(const Individual& other, double mutationRate) c
                     inheritedWeight = other.weights_[layer][j][k];
                 }
                 
-                // 2. MUTAR el peso heredado (no reemplazarlo)
+                // mutar el peso heredado
                 if (prob(gen) < mutationRate) {
                     inheritedWeight += mutation(gen);  // ← Suma una perturbación
                     inheritedWeight = max(-5.0, min(5.0, inheritedWeight));  // Clip
@@ -315,7 +312,7 @@ void Individual::mutateArchitecture(double mutationRate, int minNeurons, int max
                 }
             }
             break;
-    case 2: // INSERTAR CAPA (CORREGIDO)
+    case 2: // insertar capa
             if (topology_.size() < 8) {
                 uniform_int_distribution<> posDist(1, topology_.size() - 1);
                 uniform_int_distribution<> neuronDist(minNeurons, maxNeurons);
@@ -410,6 +407,7 @@ vector<double> Individual::forwardPass(const vector<double>& input) const {
             bool isLastLayer = (layer == weights_.size() - 1);
             // Si es la última capa, aplica sigmoide; si no, la función de activación seleccionada
             if (isLastLayer) {
+                //Cambiar segun convenencia
                 //ActivationFunctions::apply(sum, ActivationType::SIGMOID);
                 //ActivationFunctions::apply(sum, ActivationType::SOFTMAX);
                 output[j]=sum;

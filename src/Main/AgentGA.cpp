@@ -53,14 +53,10 @@ int main() {
 
     GeneticAlgorithm ga(config, inputSize, outputSize, ActivationType::TANH);
 
-    // ========================================
-    // SETUP
-    // ========================================
     ALEInterface ale;
     ale.setBool("display_screen", false); 
     ale.setBool("sound", false);
     
-    // Frame Skip 1: Necesario para precisión de francotirador
     ale.setInt("frame_skip", 1); 
     
     ale.loadROM("supported/assault.bin");
@@ -85,7 +81,6 @@ int main() {
             while (!ale.game_over() && framesAlive < maxFrames) {
                 framesAlive++;
                 
-                // INPUT
                 vector<double> state;
                 const auto& RAM = ale.getRAM();
                 state.reserve(ramImportant.size());
@@ -93,24 +88,16 @@ int main() {
                     state.push_back((static_cast<double>(RAM.get(idx)) / 255.0) - 0.5);
                 }
 
-                // PREDICCIÓN
                 vector<double> output = ind.predict(state);
-                
-                // --- CAMBIO 2: DECODIFICAR EL CEREBRO ---
-                
-                // A) PARTE MOTOR (Neuronas 0, 1, 2)
-                // Buscamos cual es la mayor entre las 3 primeras
+
                 auto maxIt = max_element(output.begin(), output.begin() + 3);
                 int moveIdx = distance(output.begin(), maxIt);
                 Action intendedMove = move_actions[moveIdx];
 
-                // B) PARTE GATILLO (Neurona 3)
-                // Si la neurona 3 es positiva (>0), la IA quiere disparar
                 bool wantToShoot = output[3] > 0.0;
 
                 Action actionToExecute;
 
-                // --- COMBINACIÓN INTELIGENTE ---
                 if (wantToShoot) {
                     // La IA quiere disparar. Combinamos con el movimiento.
                     if (intendedMove == PLAYER_A_LEFT) actionToExecute = PLAYER_A_LEFTFIRE;
@@ -141,12 +128,6 @@ int main() {
             
             // Bono por explorar
             double explorationBonus = min(minSide , 100.0)*5;
-
-            // --- CAMBIO 3: INCENTIVO DE PUNTERÍA ---
-            // Si quieres que aprenda a apuntar rápido, el 'scorePoints' ya hace el trabajo.
-            // Si no dispara cuando hay enemigo -> No gana puntos.
-            // Si dispara al aire -> Se calienta y muere -> No gana puntos.
-            // La evolución encontrará el equilibrio sola.
 
             totalFitness += (scorePoints * penaltyFactor) + explorationBonus;
         }

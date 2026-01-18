@@ -1,9 +1,3 @@
-/**
- * Uso:
- * ./RunGA --mode weights --arch 4-10-3 --dataset iris --generations 100
- * ./RunGA --mode neuro --input 784 --output 10 --dataset mnist --generations 50
- */
-
 #include "GeneticAlgorithm/GeneticAlgorithm.hpp"
 #include "ActivationFunctions.hpp"
 #include <iostream>
@@ -15,30 +9,26 @@
 #include <random>
 #include <cstring>
 #include <cmath>
+using namespace std;
 
-// -------------------------------------------------
-// Estructura de Dataset
-// -------------------------------------------------
 struct DatasetGA {
-    std::vector<std::vector<double>> Xtrain, Ytrain, Xval, Yval, Xtest, Ytest;
+    vector<vector<double>> Xtrain, Ytrain, Xval, Yval, Xtest, Ytest;
     size_t inputSize = 0;
     size_t outputSize = 0;
-    std::string name;
+    string name;
 };
 
-// -------------------------------------------------
-// Utilería: Shuffle Split
-// -------------------------------------------------
-static void shuffleSplit3(const std::vector<std::vector<double>>& Xall,
-                          const std::vector<std::vector<double>>& Yall,
+
+static void shuffleSplit3(const vector<vector<double>>& Xall,
+                          const vector<vector<double>>& Yall,
                           double trainRatio, double valRatio,
-                          std::vector<std::vector<double>>& Xtrain,
-                          std::vector<std::vector<double>>& Ytrain,
-                          std::vector<std::vector<double>>& Xval,
-                          std::vector<std::vector<double>>& Yval,
-                          std::vector<std::vector<double>>& Xtest,
-                          std::vector<std::vector<double>>& Ytest) {
-    std::vector<size_t> idx(Xall.size());
+                          vector<vector<double>>& Xtrain,
+                          vector<vector<double>>& Ytrain,
+                          vector<vector<double>>& Xval,
+                          vector<vector<double>>& Yval,
+                          vector<vector<double>>& Xtest,
+                          vector<vector<double>>& Ytest) {
+    vector<size_t> idx(Xall.size());
     for (size_t i = 0; i < idx.size(); ++i) idx[i] = i;
     std::mt19937 g(std::random_device{}());
     std::shuffle(idx.begin(), idx.end(), g);
@@ -61,36 +51,32 @@ static void shuffleSplit3(const std::vector<std::vector<double>>& Xall,
     }
 }
 
-// -------------------------------------------------
-// LOADERS ESPECÍFICOS
-// -------------------------------------------------
+static DatasetGA loadIrisGA(const string& path, double trainRatio = 0.7, double valRatio = 0.15) {
+    ifstream file(path);
+    if (!file) throw runtime_error("No se pudo abrir " + path);
 
-static DatasetGA loadIrisGA(const std::string& path, double trainRatio = 0.7, double valRatio = 0.15) {
-    std::ifstream file(path);
-    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+    string line;
+    getline(file, line); // header
 
-    std::string line;
-    std::getline(file, line); // header
+    vector<vector<double>> Xall, Yall;
+    const vector<string> classes = {"Iris-setosa", "Iris-versicolor", "Iris-virginica"};
 
-    std::vector<std::vector<double>> Xall, Yall;
-    const std::vector<std::string> classes = {"Iris-setosa", "Iris-versicolor", "Iris-virginica"};
-
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string v;
-        std::vector<double> row;
+        stringstream ss(line);
+        string v;
+        vector<double> row;
 
-        std::getline(ss, v, ','); 
+        getline(ss, v, ','); 
         for (int i = 0; i < 4; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            row.push_back(std::stod(v));
+            if (!getline(ss, v, ',')) break;
+            row.push_back(stod(v));
         }
-        if (!std::getline(ss, v, ',')) continue;
+        if (!getline(ss, v, ',')) continue;
 
-        std::vector<double> oh(3, 0.0);
-        auto it = std::find(classes.begin(), classes.end(), v);
-        if (it != classes.end()) oh[std::distance(classes.begin(), it)] = 1.0;
+        vector<double> oh(3, 0.0);
+        auto it = find(classes.begin(), classes.end(), v);
+        if (it != classes.end()) oh[distance(classes.begin(), it)] = 1.0;
 
         if (row.size() == 4) {
             Xall.push_back(row);
@@ -106,27 +92,27 @@ static DatasetGA loadIrisGA(const std::string& path, double trainRatio = 0.7, do
     return d;
 }
 
-static DatasetGA loadCancerGA(const std::string& path, double trainRatio = 0.7, double valRatio = 0.15) {
-    std::ifstream file(path);
-    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+static DatasetGA loadCancerGA(const string& path, double trainRatio = 0.7, double valRatio = 0.15) {
+    ifstream file(path);
+    if (!file) throw runtime_error("No se pudo abrir " + path);
 
-    std::string line;
-    std::getline(file, line);
-    std::vector<std::vector<double>> Xall, Yall;
+    string line;
+    getline(file, line);
+    vector<vector<double>> Xall, Yall;
 
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string v;
-        std::vector<double> row;
+        stringstream ss(line);
+        string v;
+        vector<double> row;
 
-        std::getline(ss, v, ','); 
-        std::getline(ss, v, ','); 
+        getline(ss, v, ','); 
+        getline(ss, v, ','); 
         double label = (v == "M") ? 1.0 : 0.0;
 
         for (int i = 0; i < 30; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            if (!v.empty()) row.push_back(std::stod(v));
+            if (!getline(ss, v, ',')) break;
+            if (!v.empty()) row.push_back(stod(v));
         }
 
         if (row.size() == 30) {
@@ -138,13 +124,13 @@ static DatasetGA loadCancerGA(const std::string& path, double trainRatio = 0.7, 
     // z-score normalization
     if (!Xall.empty()) {
         size_t numFeatures = 30;
-        std::vector<double> means(numFeatures, 0.0), stds(numFeatures, 0.0);
+        vector<double> means(numFeatures, 0.0), stds(numFeatures, 0.0);
         for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) means[j] += s[j];
         for (auto& m : means) m /= Xall.size();
         for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) {
             double diff = s[j] - means[j]; stds[j] += diff * diff;
         }
-        for (auto& sd : stds) sd = std::sqrt(sd / Xall.size());
+        for (auto& sd : stds) sd = sqrt(sd / Xall.size());
         for (auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) if (stds[j] > 1e-8) s[j] = (s[j] - means[j]) / stds[j];
     }
 
@@ -156,26 +142,26 @@ static DatasetGA loadCancerGA(const std::string& path, double trainRatio = 0.7, 
     return d;
 }
 
-static DatasetGA loadWineGA(const std::string& path, double trainRatio = 0.7, double valRatio = 0.15) {
-    std::ifstream file(path);
-    if (!file) throw std::runtime_error("No se pudo abrir " + path);
+static DatasetGA loadWineGA(const string& path, double trainRatio = 0.7, double valRatio = 0.15) {
+    ifstream file(path);
+    if (!file) throw runtime_error("No se pudo abrir " + path);
 
-    std::string line;
-    std::getline(file, line);
+    string line;
+    getline(file, line);
 
-    std::vector<std::vector<double>> Xall, Yall;
+    vector<vector<double>> Xall, Yall;
 
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string v;
-        std::vector<double> row;
+        stringstream ss(line);
+        string v;
+        vector<double> row;
         for (int i = 0; i < 11; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            row.push_back(std::stod(v));
+            if (!getline(ss, v, ',')) break;
+            row.push_back(stod(v));
         }
-        if (!std::getline(ss, v, ',')) continue;
-        int quality = std::stoi(v);
+        if (!getline(ss, v, ',')) continue;
+        int quality = stoi(v);
         double label = (quality >= 6) ? 1.0 : 0.0;
 
         if (row.size() == 11) {
@@ -187,13 +173,13 @@ static DatasetGA loadWineGA(const std::string& path, double trainRatio = 0.7, do
     // z-score normalization
     if (!Xall.empty()) {
         size_t numFeatures = Xall[0].size();
-        std::vector<double> means(numFeatures, 0.0), stds(numFeatures, 0.0);
+        vector<double> means(numFeatures, 0.0), stds(numFeatures, 0.0);
         for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) means[j] += s[j];
         for (auto& m : means) m /= Xall.size();
         for (const auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) {
             double diff = s[j] - means[j]; stds[j] += diff * diff;
         }
-        for (auto& sd : stds) sd = std::sqrt(sd / Xall.size());
+        for (auto& sd : stds) sd = sqrt(sd / Xall.size());
         for (auto& s : Xall) for (size_t j = 0; j < numFeatures; ++j) if (stds[j] > 1e-8) s[j] = (s[j] - means[j]) / stds[j];
     }
 
@@ -205,12 +191,9 @@ static DatasetGA loadWineGA(const std::string& path, double trainRatio = 0.7, do
     return d;
 }
 
-// -------------------------------------------------
-// LOADER MNIST OPTIMIZADO PARA GA
-// -------------------------------------------------
-static DatasetGA loadMNISTGA(const std::string& trainPath, const std::string& testPath, 
+static DatasetGA loadMNISTGA(const string& trainPath, const string& testPath, 
                              double trainRatio, double valRatio) {
-    std::cout << "Cargando MNIST para GA...\n";
+    cout << "Cargando MNIST para GA...\n";
     
     DatasetGA d;
     d.name = "mnist";
@@ -218,35 +201,35 @@ static DatasetGA loadMNISTGA(const std::string& trainPath, const std::string& te
     d.outputSize = 10;  // 10 dígitos (0-9)
     
     // Cargar datos de TRAIN
-    std::ifstream trainFile(trainPath);
-    if (!trainFile) throw std::runtime_error("No se pudo abrir " + trainPath);
+    ifstream trainFile(trainPath);
+    if (!trainFile) throw runtime_error("No se pudo abrir " + trainPath);
     
-    std::string line;
-    std::getline(trainFile, line);  // Skip header
+    string line;
+    getline(trainFile, line);  // Skip header
     
-    std::vector<std::vector<double>> XtrainAll, YtrainAll;
+    vector<vector<double>> XtrainAll, YtrainAll;
     int trainCount = 0;
     int maxTrainSamples = 10000;  // Limitado para velocidad del GA
     
-    std::cout << "  Leyendo train (max " << maxTrainSamples << ")..." << std::flush;
+    cout << "  Leyendo train (max " << maxTrainSamples << ")..." << flush;
     
-    while (std::getline(trainFile, line) && trainCount < maxTrainSamples) {
+    while (getline(trainFile, line) && trainCount < maxTrainSamples) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string v;
+        stringstream ss(line);
+        string v;
         
-        std::getline(ss, v, ',');
-        int label = std::stoi(v);
+        getline(ss, v, ',');
+        int label = stoi(v);
         
-        std::vector<double> oh(10, 0.0);
+        vector<double> oh(10, 0.0);
         if (label >= 0 && label < 10) oh[label] = 1.0;
         
-        std::vector<double> pixels;
+        vector<double> pixels;
         pixels.reserve(784);
         
         for (int i = 0; i < 784; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            pixels.push_back(std::stod(v) / 255.0);
+            if (!getline(ss, v, ',')) break;
+            pixels.push_back(stod(v) / 255.0);
         }
         
         if (pixels.size() == 784) {
@@ -254,38 +237,38 @@ static DatasetGA loadMNISTGA(const std::string& trainPath, const std::string& te
             YtrainAll.push_back(oh);
             trainCount++;
         }
-        if (trainCount % 2000 == 0) std::cout << "." << std::flush;
+        if (trainCount % 2000 == 0) cout << "." << flush;
     }
     trainFile.close();
-    std::cout << " " << trainCount << " muestras.\n";
+    cout << " " << trainCount << " muestras.\n";
     
     // Cargar datos de TEST
-    std::ifstream testFile(testPath);
-    if (!testFile) throw std::runtime_error("No se pudo abrir " + testPath);
+    ifstream testFile(testPath);
+    if (!testFile) throw runtime_error("No se pudo abrir " + testPath);
     
-    std::getline(testFile, line);  // Skip header
+    getline(testFile, line);  // Skip header
     int testCount = 0;
     int maxTestSamples = 2000;  
     
-    std::cout << "  Leyendo test (max " << maxTestSamples << ")..." << std::flush;
+    cout << "  Leyendo test (max " << maxTestSamples << ")..." << flush;
     
-    while (std::getline(testFile, line) && testCount < maxTestSamples) {
+    while (getline(testFile, line) && testCount < maxTestSamples) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string v;
+        stringstream ss(line);
+        string v;
         
-        std::getline(ss, v, ',');
-        int label = std::stoi(v);
+        getline(ss, v, ',');
+        int label = stoi(v);
         
-        std::vector<double> oh(10, 0.0);
+        vector<double> oh(10, 0.0);
         if (label >= 0 && label < 10) oh[label] = 1.0;
         
-        std::vector<double> pixels;
+        vector<double> pixels;
         pixels.reserve(784);
         
         for (int i = 0; i < 784; ++i) {
-            if (!std::getline(ss, v, ',')) break;
-            pixels.push_back(std::stod(v) / 255.0);
+            if (!getline(ss, v, ',')) break;
+            pixels.push_back(stod(v) / 255.0);
         }
         
         if (pixels.size() == 784) {
@@ -293,13 +276,13 @@ static DatasetGA loadMNISTGA(const std::string& trainPath, const std::string& te
             d.Ytest.push_back(oh);
             testCount++;
         }
-        if (testCount % 500 == 0) std::cout << "." << std::flush;
+        if (testCount % 500 == 0) cout << "." << flush;
     }
     testFile.close();
-    std::cout << " " << testCount << " muestras.\n";
+    cout << " " << testCount << " muestras.\n";
     
     // Split Train / Val (Para GA usaremos todo Train+Val en la evolución)
-    std::vector<size_t> idx(XtrainAll.size());
+    vector<size_t> idx(XtrainAll.size());
     for (size_t i = 0; i < idx.size(); ++i) idx[i] = i;
     std::mt19937 g(std::random_device{}());
     std::shuffle(idx.begin(), idx.end(), g);
@@ -320,39 +303,35 @@ static DatasetGA loadMNISTGA(const std::string& trainPath, const std::string& te
     return d;
 }
 
-// =============================================================================
-// UTILIDADES GENÉRICAS
-// =============================================================================
-
-void loadCSV(const std::string& filepath,
-             std::vector<std::vector<double>>& X,
-             std::vector<std::vector<double>>& Y,
+void loadCSV(const string& filepath,
+             vector<vector<double>>& X,
+             vector<vector<double>>& Y,
              bool hasHeader = true,
              int labelCol = -1) {
     
-    std::ifstream file(filepath);
-    if (!file) throw std::runtime_error("No se pudo abrir: " + filepath);
+    ifstream file(filepath);
+    if (!file) throw runtime_error("No se pudo abrir: " + filepath);
     
-    std::string line;
+    string line;
     bool isFirst = true;
     int numCols = 0;
     
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         if (line.empty()) continue;
         if (hasHeader && isFirst) { isFirst = false; continue; }
         
-        std::stringstream ss(line);
-        std::string cell;
-        std::vector<double> row;
+        stringstream ss(line);
+        string cell;
+        vector<double> row;
         
-        while (std::getline(ss, cell, ',')) {
-            try { row.push_back(std::stod(cell)); } catch (...) { row.push_back(0.0); }
+        while (getline(ss, cell, ',')) {
+            try { row.push_back(stod(cell)); } catch (...) { row.push_back(0.0); }
         }
         if (row.empty()) continue;
         if (numCols == 0) numCols = row.size();
         
         int lc = (labelCol < 0) ? numCols - 1 : labelCol;
-        std::vector<double> features;
+        vector<double> features;
         for (int i = 0; i < static_cast<int>(row.size()); ++i) if (i != lc) features.push_back(row[i]);
         
         X.push_back(features);
@@ -360,7 +339,7 @@ void loadCSV(const std::string& filepath,
     }
 }
 
-void normalize(std::vector<std::vector<double>>& X) {
+void normalize(vector<vector<double>>& X) {
     if (X.empty()) return;
     size_t numFeatures = X[0].size();
     for (size_t f = 0; f < numFeatures; ++f) {
@@ -375,29 +354,29 @@ void normalize(std::vector<std::vector<double>>& X) {
     }
 }
 
-void toOneHot(std::vector<std::vector<double>>& Y, int numClasses) {
-    std::vector<std::vector<double>> oneHot;
+void toOneHot(vector<vector<double>>& Y, int numClasses) {
+    vector<vector<double>> oneHot;
     for (const auto& y : Y) {
         int label = static_cast<int>(y[0]);
-        std::vector<double> encoded(numClasses, 0.0);
+        vector<double> encoded(numClasses, 0.0);
         if (label >= 0 && label < numClasses) encoded[label] = 1.0;
         oneHot.push_back(encoded);
     }
     Y = oneHot;
 }
 
-void trainTestSplit(const std::vector<std::vector<double>>& X,
-                    const std::vector<std::vector<double>>& Y,
-                    std::vector<std::vector<double>>& Xtrain,
-                    std::vector<std::vector<double>>& Ytrain,
-                    std::vector<std::vector<double>>& Xtest,
-                    std::vector<std::vector<double>>& Ytest,
+void trainTestSplit(const vector<vector<double>>& X,
+                    const vector<vector<double>>& Y,
+                    vector<vector<double>>& Xtrain,
+                    vector<vector<double>>& Ytrain,
+                    vector<vector<double>>& Xtest,
+                    vector<vector<double>>& Ytest,
                     double testRatio = 0.2) {
-    std::vector<size_t> indices(X.size());
-    std::iota(indices.begin(), indices.end(), 0);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::shuffle(indices.begin(), indices.end(), gen);
+    vector<size_t> indices(X.size());
+    iota(indices.begin(), indices.end(), 0);
+    random_device rd;
+    mt19937 gen(rd());
+    shuffle(indices.begin(), indices.end(), gen);
     
     size_t testSize = static_cast<size_t>(X.size() * testRatio);
     for (size_t i = 0; i < indices.size(); ++i) {
@@ -411,27 +390,27 @@ void trainTestSplit(const std::vector<std::vector<double>>& X,
     }
 }
 
-std::vector<int> parseArchitecture(const std::string& arch) {
-    std::vector<int> topology;
-    std::stringstream ss(arch);
-    std::string token;
-    while (std::getline(ss, token, '-')) topology.push_back(std::stoi(token));
+vector<int> parseArchitecture(const string& arch) {
+    vector<int> topology;
+    stringstream ss(arch);
+    string token;
+    while (getline(ss, token, '-')) topology.push_back(stoi(token));
     return topology;
 }
 
 double evaluateAccuracy(const Individual& ind,
-                       const std::vector<std::vector<double>>& X,
-                       const std::vector<std::vector<double>>& Y) {
+                       const vector<vector<double>>& X,
+                       const vector<vector<double>>& Y) {
     int correct = 0;
     for (size_t i = 0; i < X.size(); ++i) {
         auto pred = ind.predict(X[i]);
         if (Y[i].size() == 1) {
             double predicted = (pred[0] >= 0.5) ? 1.0 : 0.0;
-            if (std::abs(predicted - Y[i][0]) < 0.1) correct++;
+            if (abs(predicted - Y[i][0]) < 0.1) correct++;
         } else {
-            auto predMax = std::max_element(pred.begin(), pred.end());
-            auto trueMax = std::max_element(Y[i].begin(), Y[i].end());
-            if (std::distance(pred.begin(), predMax) == std::distance(Y[i].begin(), trueMax)) correct++;
+            auto predMax = max_element(pred.begin(), pred.end());
+            auto trueMax = max_element(Y[i].begin(), Y[i].end());
+            if (distance(pred.begin(), predMax) == distance(Y[i].begin(), trueMax)) correct++;
         }
     }
     if (X.empty()) return 0.0;
@@ -439,27 +418,21 @@ double evaluateAccuracy(const Individual& ind,
 }
 
 void printUsage(const char* programName) {
-    std::cout << "\nUso: " << programName << " [opciones]\n\n";
-    std::cout << "MODOS:\n";
-    std::cout << "  --mode weights    Evolución de pesos\n";
-    std::cout << "  --mode neuro      Neuroevolución (topología + pesos)\n\n";
-    std::cout << "DATOS:\n";
-    std::cout << "  --dataset <name>  mnist, iris, cancer, wine (o path CSV)\n";
-    std::cout << "  --arch <topo>     Ej: 784-20-10 (para mode weights)\n";
-    // ... (resto de ayuda abreviada)
+    cout << "\nUso: " << programName << " [opciones]\n\n";
+    cout << "MODOS:\n";
+    cout << "  --mode weights    Evolución de pesos\n";
+    cout << "  --mode neuro      Neuroevolución (topología + pesos)\n\n";
+    cout << "DATOS:\n";
+    cout << "  --dataset <name>  mnist, iris, cancer, wine (o path CSV)\n";
+    cout << "  --arch <topo>     Ej: 784-20-10 (para mode weights)\n";
 }
-
-// =============================================================================
-// MAIN
-// =============================================================================
-
 int main(int argc, char* argv[]) {
     // Valores por defecto
-    std::string mode = "weights";
-    std::string archStr = "4-10-3";
-    std::string datasetPath = "";
-    std::string savePath = "";
-    std::string activationStr = "RELU";
+    string mode = "weights";
+    string archStr = "4-10-3";
+    string datasetPath = "";
+    string savePath = "";
+    string activationStr = "RELU";
     
     int inputSize = 0, outputSize = 0, numClasses = 0;
     int labelCol = -1;
@@ -503,14 +476,14 @@ int main(int argc, char* argv[]) {
         else if (arg == "--quiet") config.verbose = false;
     }
     
-    if (datasetPath.empty()) { std::cerr << "Error: --dataset requerido\n"; return 1; }
+    if (datasetPath.empty()) { cerr << "Error: --dataset requerido\n"; return 1; }
     ActivationType activation = ActivationFunctions::fromString(activationStr);
     
     // Carga de datos
-    std::vector<std::vector<double>> Xtrain, Ytrain, Xtest, Ytest;
+    vector<vector<double>> Xtrain, Ytrain, Xtest, Ytest;
     bool loadedWithSpecial = false;
 
-    std::cout << "Dataset: " << datasetPath << "\n";
+    cout << "Dataset: " << datasetPath << "\n";
 
     if (datasetPath == "iris" || datasetPath == "cancer" || datasetPath == "wine" || datasetPath == "mnist") {
         DatasetGA d;
@@ -535,7 +508,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!loadedWithSpecial) {
-        std::vector<std::vector<double>> X, Y;
+        vector<vector<double>> X, Y;
         loadCSV(datasetPath, X, Y, hasHeader, labelCol);
         if (X.empty()) return 1;
         normalize(X);
@@ -543,14 +516,14 @@ int main(int argc, char* argv[]) {
         trainTestSplit(X, Y, Xtrain, Ytrain, Xtest, Ytest, 0.2);
     }
     
-    std::cout << "Train Samples: " << Xtrain.size() << "\n";
-    std::cout << "Test Samples:  " << Xtest.size() << "\n\n";
+    cout << "Train Samples: " << Xtrain.size() << "\n";
+    cout << "Test Samples:  " << Xtest.size() << "\n\n";
     
     Individual best({1});
     
     if (mode == "weights") {
-        std::cout << "=== MODO: WEIGHTS EVOLUTION ===\n";
-        std::vector<int> topology = parseArchitecture(archStr);
+        cout << "=== MODO: WEIGHTS EVOLUTION ===\n";
+        vector<int> topology = parseArchitecture(archStr);
         
         // Ajuste automático de entradas/salidas si es necesario
         if (!Xtrain.empty() && !Ytrain.empty()) {
@@ -561,23 +534,23 @@ int main(int argc, char* argv[]) {
         }
         
         // MOSTRAR ARQUITECTURA AL INICIO
-        std::cout << "Arquitectura: ";
+        cout << "Arquitectura: ";
         for (size_t i = 0; i < topology.size(); ++i) {
-            std::cout << topology[i] << (i < topology.size()-1 ? "-" : "");
+            cout << topology[i] << (i < topology.size()-1 ? "-" : "");
         }
-        std::cout << "\n\n";
+        cout << "\n\n";
         
         config.evolveArchitecture = false;
         GeneticAlgorithm ga(config, topology, activation);
         best = ga.evolve(Xtrain, Ytrain);
         
     } else if (mode == "neuro") {
-        std::cout << "=== MODO: NEUROEVOLUTION ===\n";
+        cout << "=== MODO: NEUROEVOLUTION ===\n";
         if (inputSize == 0 && !Xtrain.empty()) inputSize = static_cast<int>(Xtrain[0].size());
         if (outputSize == 0 && !Ytrain.empty()) outputSize = static_cast<int>(Ytrain[0].size());
         
-        std::cout << "Inputs: " << inputSize << " | Outputs: " << outputSize << "\n";
-        std::cout << "Hidden Layers: " << config.minHiddenLayers << "-" << config.maxHiddenLayers << "\n";
+        cout << "Inputs: " << inputSize << " | Outputs: " << outputSize << "\n";
+        cout << "Hidden Layers: " << config.minHiddenLayers << "-" << config.maxHiddenLayers << "\n";
         
         config.evolveArchitecture = true;
         GeneticAlgorithm ga(config, inputSize, outputSize, activation);
@@ -585,22 +558,22 @@ int main(int argc, char* argv[]) {
     }
     
     // Resultados finales
-    std::cout << "\n========================================\n";
-    std::cout << "RESULTADOS FINALES\n";
-    std::cout << "========================================\n";
+    cout << "\n========================================\n";
+    cout << "RESULTADOS FINALES\n";
+    cout << "========================================\n";
     
     double trainAcc = evaluateAccuracy(best, Xtrain, Ytrain);
     double testAcc = evaluateAccuracy(best, Xtest, Ytest);
     
-    // AQUÍ SE MUESTRA LA ARQUITECTURA FINAL
-    std::cout << "Mejor arquitectura: " << best.getArchitectureString() << "\n";
-    std::cout << "Fitness: " << best.getFitness() << "\n";
-    std::cout << "Accuracy Train: " << trainAcc << "%\n";
-    std::cout << "Accuracy Test:  " << testAcc << "%\n";
+    // Arquitectura final
+    cout << "Mejor arquitectura: " << best.getArchitectureString() << "\n";
+    cout << "Fitness: " << best.getFitness() << "\n";
+    cout << "Accuracy Train: " << trainAcc << "%\n";
+    cout << "Accuracy Test:  " << testAcc << "%\n";
     
     if (!savePath.empty()) {
         best.save(savePath);
-        std::cout << "Modelo guardado en: " << savePath << "\n";
+        cout << "Modelo guardado en: " << savePath << "\n";
     }
     
     return 0;
