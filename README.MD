@@ -66,7 +66,7 @@ Compilamos y ejecutamos el agente perceptrón:
 ```bash
 make AgentPerceptron
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
-/bin/AgentPerceptron supported/assault.bin models/perceptron/<modelo_perceptron>.txt
+/bin/AgentPerceptron models/perceptron/<modelo_perceptron>.txt
 ```
 
 - El primer argumento es la ROM de Atari Assault.
@@ -122,7 +122,7 @@ make TestAgentGA
 
 - **RunGA**: Ejecuta experimentos de entrenamiento usando un algoritmo genético para optimizar pesos o arquitecturas.
     ```bash
-    ./bin/RunGA --dataset <nombre_del_dataset> [--population N] [--generations G] [--mutation-rate M]
+    ./bin/RunGA --dataset <nombre_del_dataset> --mode neuro|weights [--population N] [--generations G] [--mutation-rate M]
     ```
     Consulta la función `usage` para ver todos los parámetros disponibles.
 
@@ -130,7 +130,7 @@ make TestAgentGA
     ```bash
     make AgentGA
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
-    ./bin/AgentGA supported/assault.bin
+    ./bin/AgentGA
     ```
 
 - **TestAgentGA**: Prueba y evalúa agentes entrenados en AgentGA.
