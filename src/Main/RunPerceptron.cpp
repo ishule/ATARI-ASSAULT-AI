@@ -207,7 +207,8 @@ static Dataset loadAtari(const std::string& path, double trainRatio, double valR
     
     Dataset d;
     d.name = "atari";
-    d.classNames = {"Right", "Left", "Fire"};
+    // Lista completa de clases de acción (incluye combinadas y NOOP), similar a RunMLP
+    d.classNames = {"NOOP", "RIGHT", "LEFT", "FIRE", "RIGHT+FIRE", "LEFT+FIRE"};
     d.isMultiLabel = true;
     d.inputSize = 63;
     d.outputSize = 3;
@@ -421,7 +422,7 @@ int main(int argc, char** argv) {
         }
         
         if (dataPath.empty()) {
-            if (dataset == "atari") dataPath = "data/data_manual_01.csv"; 
+            if (dataset == "atari") dataPath = "datasets_juntos.csv"; 
             else if (dataset == "iris") dataPath = "data/Iris.csv";
             else if (dataset == "cancer") dataPath = "data/cancermama.csv";
             else if (dataset == "wine") dataPath = "data/winequality-red.csv";

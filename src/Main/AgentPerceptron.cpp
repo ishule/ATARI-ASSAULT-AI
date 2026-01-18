@@ -12,7 +12,7 @@ const std::vector<int> ramImportant = {
 };
 
 std::string actionToString(Action a) {
-    if (a == PLAYER_A_FIRE) return "FUEGO";
+    if (a == PLAYER_A_UPFIRE) return "FUEGO";
     if (a == PLAYER_A_RIGHT) return "DERECHA";
     if (a == PLAYER_A_LEFT) return "IZQUIERDA";
     if (a == PLAYER_A_RIGHTFIRE) return "FUEGO+DER";
@@ -36,7 +36,7 @@ int main() {
     }
 
     std::cout << ">>> KICKSTART...\n";
-    for(int i=0; i<40; ++i) ale.act(PLAYER_A_FIRE);
+    for(int i=0; i<40; ++i) ale.act(PLAYER_A_UPFIRE);
 
     std::cout << "--------------------------------------------------------\n";
     std::cout << " VALORES CRUDOS (SCORES)      | DECISION   | PUNTOS \n";
@@ -72,7 +72,7 @@ int main() {
         if (doFire) {
             if (doRight) action = PLAYER_A_RIGHTFIRE;
             else if (doLeft) action = PLAYER_A_LEFTFIRE;
-            else action = PLAYER_A_FIRE;
+            else action = PLAYER_A_UPFIRE;
         } else {
             if (doRight) action = PLAYER_A_RIGHT;
             else if (doLeft) action = PLAYER_A_LEFT;
