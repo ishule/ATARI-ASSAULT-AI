@@ -1,0 +1,65 @@
+
+
+================================================
+DATASET: cancer
+Train: 398 | Val: 85 | Test: 86
+Input: 30 | Output: 1
+================================================
+
+===== FASE 1: Forward Propagation (sin entrenar) =====
+
+Exp 1 | 30-20-1- | Forward Only (pesos aleatorios)
+  Train: 21.11% | Val: 32.94% | Test: 27.91%
+
+
+===== FASE 2: Backpropagation =====
+
+Exp 2 | 30-20-1- | Backpropagation
+  Train: 98.24% | Val: 97.65% | Test: 96.51%
+
+Exp 3 | 30-50-20-1- | Backpropagation
+  Train: 98.49% | Val: 98.82% | Test: 97.67%
+
+Exp 4 | 30-100-50-1- | Backpropagation
+  Train: 98.74% | Val: 98.82% | Test: 96.51%
+
+
+===== FASE 3: Regularización (Dropout) =====
+
+Exp 5 | Dropout=0.30
+  Train: 98.49% | Val: 98.82% | Test: 96.51%
+
+Exp 6 | Dropout=0.50
+  Train: 95.48% | Val: 92.94% | Test: 96.51%
+
+
+===== FASE 4: Regularización (L2) =====
+
+Exp 7 | L2 lambda=0.01
+  Train: 98.74% | Val: 98.82% | Test: 96.51%
+
+Exp 8 | L2 lambda=0.10
+  Train: 97.24% | Val: 96.47% | Test: 97.67%
+
+
+===== FASE 5: Early Stopping =====
+
+Exp 9 | Early Stopping (stopped at epoch 146)
+  Train: 98.74% | Val: 97.65% | Test: 95.35%
+
+Exp 10 | Early Stopping (stopped at epoch 148)
+  Train: 98.74% | Val: 97.65% | Test: 97.67%
+
+
+========================================
+MEJOR MODELO PARA cancer
+========================================
+Experimento: 3
+Arquitectura: 30-50-20-1
+Activación: RELU
+Fase: backprop
+Archivo: models/mlp/cancer_exp3_30-50-20-1_RELU_backprop.txt
+Train Accuracy: 98.49%
+Val Accuracy: 98.82%
+Test Accuracy: 97.67%
+

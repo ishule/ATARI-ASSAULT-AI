@@ -158,8 +158,19 @@ int main(int argc, char** argv) {
     string modelPath = (argc > 2) ? argv[2] : "models/atari_mlp_manual.txt";
     
     // Cargar modelo MLP
-    cout << "Cargando modelo: " << modelPath << "\n";
-    MLP mlp({80, 128, 64, 3}); // Usamos esta arquitectura que es la de backtracking (segundo entrenamiento de RunMLP)
+    std::ifstream file(modelPath);
+    
+    int numCapas;
+    file >> numCapas;
+    
+    std::vector<int> arquitectura(numCapas);
+    for (int i = 0; i < numCapas; ++i) {
+        file >> arquitectura[i];
+    }
+    
+    MLP mlp(arquitectura);
+
+
     mlp.load(modelPath);
     cout << "Modelo cargado\n\n";
     

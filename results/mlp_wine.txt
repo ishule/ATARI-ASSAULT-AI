@@ -1,0 +1,65 @@
+
+
+================================================
+DATASET: wine
+Train: 1119 | Val: 239 | Test: 241
+Input: 11 | Output: 1
+================================================
+
+===== FASE 1: Forward Propagation (sin entrenar) =====
+
+Exp 1 | 11-20-1- | Forward Only (pesos aleatorios)
+  Train: 55.05% | Val: 58.16% | Test: 58.92%
+
+
+===== FASE 2: Backpropagation =====
+
+Exp 2 | 11-20-1- | Backpropagation
+  Train: 76.23% | Val: 76.57% | Test: 72.61%
+
+Exp 3 | 11-50-20-1- | Backpropagation
+  Train: 79.80% | Val: 78.66% | Test: 73.03%
+
+Exp 4 | 11-100-50-1- | Backpropagation
+  Train: 78.55% | Val: 75.73% | Test: 73.44%
+
+
+===== FASE 3: Regularización (Dropout) =====
+
+Exp 5 | Dropout=0.30
+  Train: 75.96% | Val: 75.73% | Test: 72.20%
+
+Exp 6 | Dropout=0.50
+  Train: 73.73% | Val: 76.57% | Test: 69.29%
+
+
+===== FASE 4: Regularización (L2) =====
+
+Exp 7 | L2 lambda=0.01
+  Train: 77.66% | Val: 76.15% | Test: 71.78%
+
+Exp 8 | L2 lambda=0.10
+  Train: 75.16% | Val: 76.15% | Test: 68.05%
+
+
+===== FASE 5: Early Stopping =====
+
+Exp 9 | Early Stopping (stopped at epoch 148)
+  Train: 77.48% | Val: 76.57% | Test: 73.03%
+
+Exp 10 | Early Stopping (stopped at epoch 86)
+  Train: 77.93% | Val: 74.90% | Test: 73.44%
+
+
+========================================
+MEJOR MODELO PARA wine
+========================================
+Experimento: 4
+Arquitectura: 11-100-50-1
+Activación: RELU
+Fase: backprop
+Archivo: models/mlp/wine_exp4_11-100-50-1_RELU_backprop.txt
+Train Accuracy: 78.55%
+Val Accuracy: 75.73%
+Test Accuracy: 73.44%
+
