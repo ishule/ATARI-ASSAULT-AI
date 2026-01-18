@@ -43,7 +43,28 @@ Usa las clases de utilidades:
 - `Normalize.hpp`: Para normalizar las entradas.
 
 ### 3. Perceptrón
+Compilamos el perceptrón de la siguiente forma:
+```bash
+make RunPerceptron
+./bin/RunPerceptron --dataset <nombre_del_dataset>
+```
 
+Podemos probar con los datasets: iris, cancer, wine y atari.
+Consultar la función usage dentro de RunPerceptron para ver los parámetros disponibles (número de épocas, tasa de aprendizaje, regularización, etc.).
+
+**Función que realiza:** entrena un modelo de perceptrón (clasificador lineal) sobre el dataset indicado. Se prueban varias configuraciones (por ejemplo distintas tasas de aprendizaje y número de épocas) y se guarda el mejor modelo en models/perceptron o en el fichero especificado por los parámetros.
+
+#### 3.1 Prueba con Atari
+Si el perceptrón se ha entrenado con el dataset atari, podrá usarse con el agente compilado para perceptrón.
+
+Compilamos y ejecutamos el agente perceptrón:
+```bash
+make AgentPerceptron
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
+/bin/AgentPerceptron supported/assault.bin models/perceptron/<modelo_perceptron>.txt
+```
+
+El primer argumento es la ROM de Atari Assault y el segundo es el fichero con los pesos/hiperparámetros guardados. Asegurarse de exportar libale.so en LD_LIBRARY_PATH para que la librería se encuentre en tiempo de ejecución.
 
 ### 4. MLP
 Compilamos la red MLP de la siguiente forma:
@@ -74,5 +95,35 @@ El primer argumento es la ROM de Atari Assault y el segundo es el modelo con la 
 Nos aseguramos que primero hemos exportado la librería libale.so para que se pueda encontrar en tiempo de ejecución, si no, no se ejecutará.
 
 ### 5. Algoritmos genéticos
+Compilamos los ejecutables relacionados con algoritmos genéticos:
+```bash
+make RunGA
+make AgentGA
+make TestAgentGA
+```
+
+- RunGA: ejecuta experimentos de entrenamiento usando un algoritmo genético para optimizar pesos o arquitecturas. Usar:
+```bash
+./bin/RunGA --dataset <nombre_del_dataset> [--population N] [--generations G] [--mutation-rate M]
+```
+Consultar la función usage para ver todos los parámetros disponibles.
+
+- TestAgentGA: sirve para probar y evaluar candidatos resultantes del algoritmo genético en un entorno controlado sin exigir la ROM.
+
+- AgentGA: ejecuta un agente que utiliza el modelo generado por el algoritmo genético sobre la ROM de Atari.
+
+**Función que realizan:** los scripts de Algoritmos Genéticos buscan, mediante operadores de población (selección, cruce, mutación), configuraciones (vectores de pesos o parámetros) que maximicen la métrica objetivo sobre el dataset. Los resultados y mejores soluciones se guardan en results/ y en models/ga (o models/neuro_ga) según la configuración.
+
+#### 5.1 Notas y recomendaciones
+- Ajustar population size, número de generaciones y tasa de mutación según el problema y recursos disponibles.
+- Usar TestAgentGA para validar soluciones sin necesidad de ejecutar la ROM continuamente.
+- Los archivos resultantes suelen guardarse en results/ga_* y models/ga_; revisar esos directorios para localizar el mejor individuo generado.
+- Para ejecutar un agente GA en Atari:
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
+/bin/AgentGA supported/assault.bin models/ga/<mejor_individuo>.txt
+```
+
+Asegurarse de consultar los ficheros de ayuda (usage) en cada ejecutable para parámetros específicos.
 
 
