@@ -1,136 +1,129 @@
-Cargando dataset: cancer
-Train: 483 muestras
-Test: 86 muestras
+Dataset: cancer
+Train Samples: 483
+Test Samples:  86
 
-========================================
-MODO: NEUROEVOLUCIÓN (Nota 2.00)
-========================================
+=== MODO: NEUROEVOLUTION ===
+Inputs: 30 | Outputs: 1
+Hidden Layers: 1-4
 
-Entradas: 30
-Salidas: 1
-Capas ocultas: 1-4
-Neuronas/capa: 4-64
-
-
-=== Algoritmo Genético (Neuroevolución) Inicializado ===
-Población: 50 individuos
+=== Algoritmo Gen├®tico (Neuroevoluci├│n) Inicializado ===
+Poblaci├│n: 50 individuos
 Entradas: 30, Salidas: 1
-Modo: NEUROEVOLUCIÓN - Arquitectura + Pesos (Nota 2.00)
+Modo: Neuroevolucion
 Capas ocultas: 1-4
 Neuronas/capa: 4-64
-Tasa mutación pesos: 0.1
-Tasa mutación arquitectura: 0.05
+Tasa mutaci├│n pesos: 0.1
+Tasa mutaci├│n arquitectura: 0.05
 
-Iniciando evolución...
-Generaciones máximas: 100
+Iniciando evoluci├│n...
+Generaciones m├íximas: 100
 Fitness objetivo: 1e+09
 
-Gen 0 | Best: 74.3254 | Avg: 53.8426 | Arch: 30-43-21-1 | Params: 2279
-Gen 1 | Best: 87.2396 | Avg: 65.3427 | Arch: 30-38-36-1 | Params: 2619
-Gen 2 | Best: 87.2439 | Avg: 65.8772 | Arch: 30-38-36-1 | Params: 2619
-Gen 3 | Best: 93.6794 | Avg: 76.4341 | Arch: 30-26-24-1 | Params: 1479
-Gen 4 | Best: 93.6794 | Avg: 82.6334 | Arch: 30-26-24-1 | Params: 1479
-Gen 5 | Best: 94.5199 | Avg: 86.2433 | Arch: 30-26-24-1 | Params: 1479
-Gen 6 | Best: 94.5199 | Avg: 88.9587 | Arch: 30-26-24-1 | Params: 1479
-Gen 7 | Best: 95.7531 | Avg: 90.2785 | Arch: 30-26-24-1 | Params: 1479
-Gen 8 | Best: 95.7531 | Avg: 92.7291 | Arch: 30-26-24-1 | Params: 1479
-Gen 9 | Best: 95.7531 | Avg: 92.9161 | Arch: 30-26-24-1 | Params: 1479
-Gen 10 | Best: 95.7616 | Avg: 92.6649 | Arch: 30-26-24-1 | Params: 1479
-Gen 11 | Best: 96.1993 | Avg: 94.269 | Arch: 30-26-24-1 | Params: 1479
-Gen 12 | Best: 96.4008 | Avg: 94.1987 | Arch: 30-26-24-1 | Params: 1479
-Gen 13 | Best: 97.2302 | Avg: 94.3981 | Arch: 30-26-24-1 | Params: 1479
-Gen 14 | Best: 97.2381 | Avg: 95.5728 | Arch: 30-26-24-1 | Params: 1479
-Gen 15 | Best: 97.2381 | Avg: 95.3881 | Arch: 30-26-24-1 | Params: 1479
-Gen 16 | Best: 97.2381 | Avg: 94.994 | Arch: 30-26-24-1 | Params: 1479
-Gen 17 | Best: 97.2381 | Avg: 95.7972 | Arch: 30-26-24-1 | Params: 1479
-Gen 18 | Best: 97.4464 | Avg: 94.8418 | Arch: 30-26-24-1 | Params: 1479
-Gen 19 | Best: 97.8557 | Avg: 95.6384 | Arch: 30-26-24-1 | Params: 1479
-Gen 20 | Best: 97.8557 | Avg: 96.2798 | Arch: 30-26-24-1 | Params: 1479
-Gen 21 | Best: 97.8557 | Avg: 96.2608 | Arch: 30-26-24-1 | Params: 1479
-Gen 22 | Best: 97.8557 | Avg: 96.5059 | Arch: 30-26-24-1 | Params: 1479
-Gen 23 | Best: 97.8609 | Avg: 96.3956 | Arch: 30-26-24-1 | Params: 1479
-Gen 24 | Best: 98.0765 | Avg: 96.0679 | Arch: 30-26-24-1 | Params: 1479
-Gen 25 | Best: 98.0765 | Avg: 95.3694 | Arch: 30-26-24-1 | Params: 1479
-Gen 26 | Best: 98.0765 | Avg: 95.4663 | Arch: 30-26-24-1 | Params: 1479
-Gen 27 | Best: 98.2785 | Avg: 96.585 | Arch: 30-26-24-1 | Params: 1479
-Gen 28 | Best: 98.7072 | Avg: 95.5462 | Arch: 30-26-24-1 | Params: 1479
-Gen 29 | Best: 98.7072 | Avg: 97.2432 | Arch: 30-26-24-1 | Params: 1479
-Gen 30 | Best: 98.7072 | Avg: 96.7442 | Arch: 30-26-24-1 | Params: 1479
-Gen 31 | Best: 98.7072 | Avg: 97.1034 | Arch: 30-26-24-1 | Params: 1479
-Gen 32 | Best: 98.7072 | Avg: 97.0615 | Arch: 30-26-24-1 | Params: 1479
-Gen 33 | Best: 98.7072 | Avg: 96.6791 | Arch: 30-26-24-1 | Params: 1479
-Gen 34 | Best: 98.7124 | Avg: 97.4867 | Arch: 30-26-24-1 | Params: 1479
-Gen 35 | Best: 98.7124 | Avg: 93.5 | Arch: 30-26-24-1 | Params: 1479
-Gen 36 | Best: 98.7124 | Avg: 97.1957 | Arch: 30-26-24-1 | Params: 1479
-Gen 37 | Best: 98.7154 | Avg: 97.6516 | Arch: 30-26-24-1 | Params: 1479
-Gen 38 | Best: 98.7154 | Avg: 95.153 | Arch: 30-26-24-1 | Params: 1479
-Gen 39 | Best: 98.7154 | Avg: 96.693 | Arch: 30-26-24-1 | Params: 1479
-Gen 40 | Best: 98.7154 | Avg: 95.6084 | Arch: 30-26-24-1 | Params: 1479
-Gen 41 | Best: 98.7185 | Avg: 97.9031 | Arch: 30-26-24-1 | Params: 1479
-Gen 42 | Best: 98.9241 | Avg: 95.999 | Arch: 30-26-24-1 | Params: 1479
-Gen 43 | Best: 99.1316 | Avg: 96.3939 | Arch: 30-26-24-1 | Params: 1479
-Gen 44 | Best: 99.1316 | Avg: 97.2399 | Arch: 30-26-24-1 | Params: 1479
-Gen 45 | Best: 99.3402 | Avg: 97.2967 | Arch: 30-26-24-1 | Params: 1479
-Gen 46 | Best: 99.3402 | Avg: 97.9096 | Arch: 30-26-24-1 | Params: 1479
-Gen 47 | Best: 99.3402 | Avg: 97.1381 | Arch: 30-26-24-1 | Params: 1479
-Gen 48 | Best: 99.3402 | Avg: 96.6858 | Arch: 30-26-24-1 | Params: 1479
-Gen 49 | Best: 99.3402 | Avg: 97.1402 | Arch: 30-26-24-1 | Params: 1479
-Gen 50 | Best: 99.3402 | Avg: 98.3405 | Arch: 30-26-24-1 | Params: 1479
-Gen 51 | Best: 99.3402 | Avg: 97.0487 | Arch: 30-26-24-1 | Params: 1479
-Gen 52 | Best: 99.3402 | Avg: 97.1025 | Arch: 30-26-24-1 | Params: 1479
-Gen 53 | Best: 99.3402 | Avg: 96.0584 | Arch: 30-26-24-1 | Params: 1479
-Gen 54 | Best: 99.3402 | Avg: 97.7718 | Arch: 30-26-24-1 | Params: 1479
-Gen 55 | Best: 99.3402 | Avg: 97.0105 | Arch: 30-26-24-1 | Params: 1479
-Gen 56 | Best: 99.3402 | Avg: 98.2872 | Arch: 30-26-24-1 | Params: 1479
-Gen 57 | Best: 99.3402 | Avg: 97.8176 | Arch: 30-26-24-1 | Params: 1479
-Gen 58 | Best: 99.3402 | Avg: 98.4346 | Arch: 30-26-24-1 | Params: 1479
-Gen 59 | Best: 99.345 | Avg: 97.5634 | Arch: 30-26-24-1 | Params: 1479
-Gen 60 | Best: 99.345 | Avg: 98.1856 | Arch: 30-26-24-1 | Params: 1479
-Gen 61 | Best: 99.345 | Avg: 97.9805 | Arch: 30-26-24-1 | Params: 1479
-Gen 62 | Best: 99.3451 | Avg: 98.5515 | Arch: 30-26-24-1 | Params: 1479
-Gen 63 | Best: 99.3451 | Avg: 98.5437 | Arch: 30-26-24-1 | Params: 1479
-Gen 64 | Best: 99.3451 | Avg: 97.7478 | Arch: 30-26-24-1 | Params: 1479
-Gen 65 | Best: 99.3451 | Avg: 97.7396 | Arch: 30-26-24-1 | Params: 1479
-Gen 66 | Best: 99.346 | Avg: 98.3347 | Arch: 30-26-24-1 | Params: 1479
-Gen 67 | Best: 99.346 | Avg: 97.7897 | Arch: 30-26-24-1 | Params: 1479
-Gen 68 | Best: 99.346 | Avg: 98.3589 | Arch: 30-26-24-1 | Params: 1479
-Gen 69 | Best: 99.3481 | Avg: 98.2143 | Arch: 30-26-24-1 | Params: 1479
-Gen 70 | Best: 99.3481 | Avg: 98.3559 | Arch: 30-26-24-1 | Params: 1479
-Gen 71 | Best: 99.3481 | Avg: 98.6566 | Arch: 30-26-24-1 | Params: 1479
-Gen 72 | Best: 99.3481 | Avg: 98.6194 | Arch: 30-26-24-1 | Params: 1479
-Gen 73 | Best: 99.3485 | Avg: 98.1627 | Arch: 30-26-24-1 | Params: 1479
-Gen 74 | Best: 99.3485 | Avg: 98.1164 | Arch: 30-26-24-1 | Params: 1479
-Gen 75 | Best: 99.3485 | Avg: 98.0712 | Arch: 30-26-24-1 | Params: 1479
-Gen 76 | Best: 99.3511 | Avg: 98.0177 | Arch: 30-26-24-1 | Params: 1479
-Gen 77 | Best: 99.3511 | Avg: 96.8123 | Arch: 30-26-24-1 | Params: 1479
-Gen 78 | Best: 99.3511 | Avg: 98.5988 | Arch: 30-26-24-1 | Params: 1479
-Gen 79 | Best: 99.3514 | Avg: 98.6645 | Arch: 30-26-24-1 | Params: 1479
-Gen 80 | Best: 99.3514 | Avg: 96.4178 | Arch: 30-26-24-1 | Params: 1479
-Gen 81 | Best: 99.3526 | Avg: 97.4147 | Arch: 30-26-24-1 | Params: 1479
-Gen 82 | Best: 99.3526 | Avg: 97.4411 | Arch: 30-26-24-1 | Params: 1479
-Gen 83 | Best: 99.3561 | Avg: 98.6872 | Arch: 30-26-24-1 | Params: 1479
-Gen 84 | Best: 99.3561 | Avg: 98.6878 | Arch: 30-26-24-1 | Params: 1479
-Gen 85 | Best: 99.3561 | Avg: 95.7271 | Arch: 30-26-24-1 | Params: 1479
-Gen 86 | Best: 99.3561 | Avg: 97.3905 | Arch: 30-26-24-1 | Params: 1479
-Gen 87 | Best: 99.3571 | Avg: 98.7615 | Arch: 30-26-24-1 | Params: 1479
-Gen 88 | Best: 99.3571 | Avg: 97.3322 | Arch: 30-26-24-1 | Params: 1479
-Gen 89 | Best: 99.3571 | Avg: 98.9235 | Arch: 30-26-24-1 | Params: 1479
-Gen 90 | Best: 99.3571 | Avg: 98.8995 | Arch: 30-26-24-1 | Params: 1479
-Gen 91 | Best: 99.3572 | Avg: 98.7839 | Arch: 30-32-24-1 | Params: 1809
-Gen 92 | Best: 99.3582 | Avg: 96.9313 | Arch: 30-26-24-1 | Params: 1479
-Gen 93 | Best: 99.3586 | Avg: 98.9461 | Arch: 30-26-24-1 | Params: 1479
-Gen 94 | Best: 99.3586 | Avg: 98.9296 | Arch: 30-26-24-1 | Params: 1479
-Gen 95 | Best: 99.3586 | Avg: 98.1672 | Arch: 30-26-24-1 | Params: 1479
-Gen 96 | Best: 99.3586 | Avg: 98.872 | Arch: 30-26-24-1 | Params: 1479
-Gen 97 | Best: 99.3597 | Avg: 96.3428 | Arch: 30-26-24-1 | Params: 1479
-Gen 98 | Best: 99.3597 | Avg: 97.8314 | Arch: 30-26-24-1 | Params: 1479
-Gen 99 | Best: 99.3601 | Avg: 98.8842 | Arch: 30-26-24-1 | Params: 1479
+Gen 0 | Best: 75.536 | Avg: 60.7064 | Arch: 30-24-18-40-33-1 | Params: 3341
+Gen 1 | Best: 84.8587 | Avg: 67.1126 | Arch: 30-24-18-40-33-1 | Params: 3341
+Gen 2 | Best: 86.8999 | Avg: 72.4585 | Arch: 30-48-1 | Params: 1537
+Gen 3 | Best: 89.1526 | Avg: 76.3726 | Arch: 30-48-1 | Params: 1537
+Gen 4 | Best: 90.0372 | Avg: 81.9389 | Arch: 30-48-1 | Params: 1537
+Gen 5 | Best: 91.7289 | Avg: 83.4548 | Arch: 30-48-1 | Params: 1537
+Gen 6 | Best: 92.5618 | Avg: 86.9509 | Arch: 30-48-1 | Params: 1537
+Gen 7 | Best: 93.627 | Avg: 89.1263 | Arch: 30-48-1 | Params: 1537
+Gen 8 | Best: 93.889 | Avg: 89.967 | Arch: 30-48-1 | Params: 1537
+Gen 9 | Best: 94.1831 | Avg: 90.7855 | Arch: 30-48-1 | Params: 1537
+Gen 10 | Best: 94.8107 | Avg: 91.7762 | Arch: 30-48-1 | Params: 1537
+Gen 11 | Best: 94.8458 | Avg: 92.4864 | Arch: 30-48-1 | Params: 1537
+Gen 12 | Best: 95.3767 | Avg: 92.2994 | Arch: 30-48-1 | Params: 1537
+Gen 13 | Best: 95.3767 | Avg: 89.6081 | Arch: 30-48-1 | Params: 1537
+Gen 14 | Best: 96.1321 | Avg: 92.6907 | Arch: 30-48-1 | Params: 1537
+Gen 15 | Best: 96.1321 | Avg: 91.9826 | Arch: 30-48-1 | Params: 1537
+Gen 16 | Best: 96.1321 | Avg: 93.9335 | Arch: 30-48-1 | Params: 1537
+Gen 17 | Best: 96.1847 | Avg: 92.0268 | Arch: 30-48-1 | Params: 1537
+Gen 18 | Best: 96.1847 | Avg: 94.0126 | Arch: 30-48-1 | Params: 1537
+Gen 19 | Best: 97.0573 | Avg: 94.1541 | Arch: 30-48-1 | Params: 1537
+Gen 20 | Best: 97.0573 | Avg: 93.4201 | Arch: 30-48-1 | Params: 1537
+Gen 21 | Best: 97.0573 | Avg: 94.0489 | Arch: 30-48-1 | Params: 1537
+Gen 22 | Best: 97.0573 | Avg: 94.3918 | Arch: 30-48-1 | Params: 1537
+Gen 23 | Best: 97.0573 | Avg: 94.7179 | Arch: 30-48-1 | Params: 1537
+Gen 24 | Best: 97.0573 | Avg: 94.4569 | Arch: 30-48-1 | Params: 1537
+Gen 25 | Best: 97.0573 | Avg: 94.462 | Arch: 30-48-1 | Params: 1537
+Gen 26 | Best: 97.0573 | Avg: 94.4777 | Arch: 30-48-1 | Params: 1537
+Gen 27 | Best: 97.0573 | Avg: 94.0691 | Arch: 30-48-1 | Params: 1537
+Gen 28 | Best: 97.0573 | Avg: 94.837 | Arch: 30-48-1 | Params: 1537
+Gen 29 | Best: 97.0573 | Avg: 94.5722 | Arch: 30-48-1 | Params: 1537
+Gen 30 | Best: 97.0573 | Avg: 94.5753 | Arch: 30-48-1 | Params: 1537
+Gen 31 | Best: 97.0573 | Avg: 94.4106 | Arch: 30-48-1 | Params: 1537
+Gen 32 | Best: 97.0573 | Avg: 94.4279 | Arch: 30-48-1 | Params: 1537
+Gen 33 | Best: 97.0573 | Avg: 95.2027 | Arch: 30-48-1 | Params: 1537
+Gen 34 | Best: 97.0573 | Avg: 94.6194 | Arch: 30-48-1 | Params: 1537
+Gen 35 | Best: 97.0573 | Avg: 93.8464 | Arch: 30-48-1 | Params: 1537
+Gen 36 | Best: 97.0573 | Avg: 94.0827 | Arch: 30-48-1 | Params: 1537
+Gen 37 | Best: 97.0573 | Avg: 94.8565 | Arch: 30-48-1 | Params: 1537
+Gen 38 | Best: 97.0573 | Avg: 93.4584 | Arch: 30-48-1 | Params: 1537
+Gen 39 | Best: 97.0573 | Avg: 94.6856 | Arch: 30-48-1 | Params: 1537
+Gen 40 | Best: 97.2344 | Avg: 95.3523 | Arch: 30-48-1 | Params: 1537
+Gen 41 | Best: 97.2344 | Avg: 95.4424 | Arch: 30-48-1 | Params: 1537
+Gen 42 | Best: 97.2344 | Avg: 95.3646 | Arch: 30-48-1 | Params: 1537
+Gen 43 | Best: 97.2344 | Avg: 94.3735 | Arch: 30-48-1 | Params: 1537
+Gen 44 | Best: 97.2344 | Avg: 95.5382 | Arch: 30-48-1 | Params: 1537
+Gen 45 | Best: 97.2344 | Avg: 95.4431 | Arch: 30-48-1 | Params: 1537
+Gen 46 | Best: 97.3469 | Avg: 95.5857 | Arch: 30-48-1 | Params: 1537
+Gen 47 | Best: 97.3469 | Avg: 94.8065 | Arch: 30-48-1 | Params: 1537
+Gen 48 | Best: 97.3469 | Avg: 95.4757 | Arch: 30-48-1 | Params: 1537
+Gen 49 | Best: 97.3469 | Avg: 94.3293 | Arch: 30-48-1 | Params: 1537
+Gen 50 | Best: 97.3469 | Avg: 95.1361 | Arch: 30-48-1 | Params: 1537
+Gen 51 | Best: 97.3469 | Avg: 95.2238 | Arch: 30-48-1 | Params: 1537
+Gen 52 | Best: 97.3469 | Avg: 95.1997 | Arch: 30-48-1 | Params: 1537
+Gen 53 | Best: 97.3469 | Avg: 94.9954 | Arch: 30-48-1 | Params: 1537
+Gen 54 | Best: 97.3469 | Avg: 94.2004 | Arch: 30-48-1 | Params: 1537
+Gen 55 | Best: 97.3469 | Avg: 95.443 | Arch: 30-48-1 | Params: 1537
+Gen 56 | Best: 97.3469 | Avg: 95.5892 | Arch: 30-48-1 | Params: 1537
+Gen 57 | Best: 97.3469 | Avg: 94.9005 | Arch: 30-48-1 | Params: 1537
+Gen 58 | Best: 97.3469 | Avg: 94.8604 | Arch: 30-48-1 | Params: 1537
+Gen 59 | Best: 97.3469 | Avg: 95.1205 | Arch: 30-48-1 | Params: 1537
+Gen 60 | Best: 97.3469 | Avg: 95.6704 | Arch: 30-48-1 | Params: 1537
+Gen 61 | Best: 97.3469 | Avg: 94.7101 | Arch: 30-48-1 | Params: 1537
+Gen 62 | Best: 97.3469 | Avg: 95.2934 | Arch: 30-48-1 | Params: 1537
+Gen 63 | Best: 97.3469 | Avg: 94.4343 | Arch: 30-48-1 | Params: 1537
+Gen 64 | Best: 97.3469 | Avg: 94.4537 | Arch: 30-48-1 | Params: 1537
+Gen 65 | Best: 97.3469 | Avg: 95.3459 | Arch: 30-48-1 | Params: 1537
+Gen 66 | Best: 97.3469 | Avg: 95.445 | Arch: 30-48-1 | Params: 1537
+Gen 67 | Best: 97.3469 | Avg: 95.1796 | Arch: 30-48-1 | Params: 1537
+Gen 68 | Best: 97.3469 | Avg: 94.4853 | Arch: 30-48-1 | Params: 1537
+Gen 69 | Best: 97.3469 | Avg: 95.5819 | Arch: 30-48-1 | Params: 1537
+Gen 70 | Best: 97.3469 | Avg: 95.0089 | Arch: 30-48-1 | Params: 1537
+Gen 71 | Best: 97.3469 | Avg: 94.7878 | Arch: 30-48-1 | Params: 1537
+Gen 72 | Best: 97.3469 | Avg: 95.4341 | Arch: 30-48-1 | Params: 1537
+Gen 73 | Best: 97.3469 | Avg: 93.8691 | Arch: 30-48-1 | Params: 1537
+Gen 74 | Best: 97.3469 | Avg: 93.089 | Arch: 30-48-1 | Params: 1537
+Gen 75 | Best: 97.3469 | Avg: 95.158 | Arch: 30-48-1 | Params: 1537
+Gen 76 | Best: 97.3469 | Avg: 95.5839 | Arch: 30-48-1 | Params: 1537
+Gen 77 | Best: 97.3469 | Avg: 95.3242 | Arch: 30-48-1 | Params: 1537
+Gen 78 | Best: 97.3469 | Avg: 95.4277 | Arch: 30-48-1 | Params: 1537
+Gen 79 | Best: 97.3469 | Avg: 95.6106 | Arch: 30-48-1 | Params: 1537
+Gen 80 | Best: 97.3469 | Avg: 94.6546 | Arch: 30-48-1 | Params: 1537
+Gen 81 | Best: 97.3469 | Avg: 94.9563 | Arch: 30-48-1 | Params: 1537
+Gen 82 | Best: 97.3469 | Avg: 95.4457 | Arch: 30-48-1 | Params: 1537
+Gen 83 | Best: 97.3469 | Avg: 93.4735 | Arch: 30-48-1 | Params: 1537
+Gen 84 | Best: 97.3469 | Avg: 94.4706 | Arch: 30-48-1 | Params: 1537
+Gen 85 | Best: 97.3469 | Avg: 94.28 | Arch: 30-48-1 | Params: 1537
+Gen 86 | Best: 97.3469 | Avg: 94.7769 | Arch: 30-48-1 | Params: 1537
+Gen 87 | Best: 97.3469 | Avg: 95.7621 | Arch: 30-48-1 | Params: 1537
+Gen 88 | Best: 97.3469 | Avg: 95.6048 | Arch: 30-48-1 | Params: 1537
+Gen 89 | Best: 97.3469 | Avg: 94.8809 | Arch: 30-48-1 | Params: 1537
+Gen 90 | Best: 97.3469 | Avg: 94.8374 | Arch: 30-48-1 | Params: 1537
+Gen 91 | Best: 97.3469 | Avg: 95.4402 | Arch: 30-48-1 | Params: 1537
+Gen 92 | Best: 97.3469 | Avg: 95.2882 | Arch: 30-48-1 | Params: 1537
+Gen 93 | Best: 97.3469 | Avg: 95.6757 | Arch: 30-48-1 | Params: 1537
+Gen 94 | Best: 97.3469 | Avg: 93.8204 | Arch: 30-48-1 | Params: 1537
+Gen 95 | Best: 97.3469 | Avg: 94.8798 | Arch: 30-48-1 | Params: 1537
+Gen 96 | Best: 97.3469 | Avg: 95.326 | Arch: 30-48-1 | Params: 1537
+Gen 97 | Best: 97.3469 | Avg: 95.2911 | Arch: 30-48-1 | Params: 1537
+Gen 98 | Best: 97.3469 | Avg: 95.2155 | Arch: 30-48-1 | Params: 1537
+Gen 99 | Best: 97.3469 | Avg: 95.537 | Arch: 30-48-1 | Params: 1537
 
 ========================================
 RESULTADOS FINALES
 ========================================
-Mejor arquitectura: 30-26-24-1
-Parámetros totales: 1479
-Fitness final: 99.3601
-Accuracy Train: 99.3789%
-Accuracy Test: 97.6744%
+Mejor arquitectura: 30-48-1
+Fitness: 97.3469
+Accuracy Train: 98.5507%
+Accuracy Test:  97.6744%

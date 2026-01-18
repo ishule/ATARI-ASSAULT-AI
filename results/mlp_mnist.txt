@@ -1,7 +1,7 @@
 
 
 ================================================
-DATASET: mnist
+DATASET: mnist - usando train_small debido a que tardaba mucho
 Train: 3500 | Val: 750 | Test: 750
 Input: 784 | Output: 10
 ================================================

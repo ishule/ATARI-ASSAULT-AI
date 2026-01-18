@@ -560,7 +560,7 @@ int main(int argc, char* argv[]) {
                 topology.back() = static_cast<int>(Ytrain[0].size());
         }
         
-        // MOSTRAR ARQUITECTURA AL INICIO (estilo RunMLP)
+        // MOSTRAR ARQUITECTURA AL INICIO
         std::cout << "Arquitectura: ";
         for (size_t i = 0; i < topology.size(); ++i) {
             std::cout << topology[i] << (i < topology.size()-1 ? "-" : "");
