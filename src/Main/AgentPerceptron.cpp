@@ -28,7 +28,7 @@ int main() {
 
     Perceptron agent(ramImportant.size(), 3); 
     try {
-        agent.load("models/assault_perceptron.txt");
+        agent.load("models/perceptron/assault_perceptron.txt");
         std::cout << ">>> CEREBRO CARGADO OK.\n";
     } catch (...) {
         std::cerr << "ERROR: No encuentro 'models/assault_perceptron.txt'.\n";
