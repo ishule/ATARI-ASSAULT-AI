@@ -74,7 +74,7 @@ void Perceptron::train(const MatDouble_t& X, const MatDouble_t& Y,
     MatDouble_t bestWeights = weights;
     double bestVal = -1.0;
     bool hasVal = !Xval.empty();
-    double learningRate = 0.1; 
+    double learningRate = 0.01; 
 
     for (int epoch = 0; epoch < 100; ++epoch) {
         for (size_t i = 0; i < X.size(); ++i) {
@@ -126,7 +126,8 @@ VecDouble_t Perceptron::predict(const VecDouble_t& input) const {
         double dot = inner_product(input.begin(), input.end(), weights[j].begin(), 0.0);
         double val = dot + weights[j].back();
         
-        outputs[j] = (val >= 0.0) ? 1.0 : -1.0; 
+        //outputs[j] = (val >= 0.0) ? 1.0 : -1.0; 
+        outputs[j]=val;
     }
     return outputs;
 }

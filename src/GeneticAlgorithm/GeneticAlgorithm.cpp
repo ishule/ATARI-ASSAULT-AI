@@ -214,13 +214,23 @@ void GeneticAlgorithm::evaluatePopulation(const vector<vector<double>>& X, const
         ind.calculateFitness(X, Y);
     }
 }
-// Evaluar la población usando función de fitness custom
+// En GeneticAlgorithm.cpp
+
 void GeneticAlgorithm::evaluatePopulationCustom() {
     if (!fitnessFunction) {
         throw runtime_error("Función de fitness no establecida");
     }
+    
+    int counter = 0;
+    int total = population.size();
+
     for (auto& ind : population) {
-        fitnessFunction(ind);
+        // 🔥🔥 CORRECCIÓN CRÍTICA 🔥🔥
+        // Antes tenías: fitnessFunction(ind);  --> Calculaba y tiraba el valor
+        // Ahora hacemos:
+        double result = fitnessFunction(ind);
+        ind.setFitness(result); // <-- ¡GUARDAMOS LA NOTA!
+        
     }
 }
 

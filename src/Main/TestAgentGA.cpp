@@ -3,8 +3,8 @@
 #include <SDL/SDL.h>
 #include <iostream>
 #include <vector>
-#include <algorithm> // Para max_element
-//ARCHIVO PARA PROBAR LA IA ENTRENADA CON GENETIC ALGORITHM
+#include <algorithm>
+
 // La misma RAM que usamos para entrenar
 const std::vector<int> ramImportant = {
     15,47,48,49,50,51,52,20,21,23,24,25,39,71,109,113,
@@ -16,26 +16,35 @@ int main() {
     ALEInterface ale;
     
     // === CONFIGURACIÓN VISUAL ===
-    ale.setBool("display_screen", true);  // ¡AQUÍ SÍ VEMOS EL JUEGO!
-    ale.setBool("sound", true);           // Con sonido
+    ale.setBool("display_screen", true); 
+    ale.setBool("sound", true);           
     ale.setInt("random_seed", 123);
-    ale.setInt("frame_skip", 0);          // Ver cada frame
+    ale.setInt("frame_skip", 4);          
     
     ale.loadROM("supported/assault.bin");
 
-    // 1. Creamos un individuo vacío (placeholder)
-    // Le ponemos una topología dummy {1} porque 'load' la va a sobreescribir
+    // ⚠️ CORRECCIÓN 1: DEFINIR LAS MISMAS ACCIONES QUE EN EL TRAINER
+    ActionVect legal_actions = {
+        PLAYER_A_NOOP, 
+        PLAYER_A_UPFIRE,    // Recuerda que cambiamos UPFIRE por FIRE
+        PLAYER_A_RIGHT,     
+        PLAYER_A_LEFT, 
+        PLAYER_A_RIGHTFIRE, 
+        PLAYER_A_LEFTFIRE
+    };
+
+    // 1. Creamos placeholder
     Individual agent({1}); 
 
-    // 2. Cargamos el cerebro entrenado por el GA
-    std::string modelPath = "models/assault_agent_genetic.txt"; // MO
+    // 2. Cargamos el cerebro
+    // Asegúrate de que el nombre del archivo coincide con el que guardaste
+    std::string modelPath = "models/assault_neuro_final_02.txt"; 
     try {
         std::cout << "Cargando modelo desde: " << modelPath << "...\n";
         agent.load(modelPath);
-        std::cout << "Modelo cargado correctamente.\n";
+        std::cout << "Modelo cargado. Arquitectura: " << agent.getArchitectureString() << "\n";
     } catch (const std::exception& e) {
-        std::cerr << "Error cargando el modelo: " << e.what() << "\n";
-        std::cerr << "Asegúrate de ejecutar primero AgentGA para generar el archivo.\n";
+        std::cerr << "Error: " << e.what() << "\n";
         return 1;
     }
 
@@ -46,23 +55,30 @@ int main() {
     std::cout << "Iniciando partida..." << std::endl;
 
     while (!ale.game_over()) {
-        // A. Obtener estado (RAM)
+        // A. Obtener estado
         std::vector<double> state;
         const auto& RAM = ale.getRAM();
         state.reserve(ramImportant.size());
+        
+        // ⚠️ CORRECCIÓN 2: NORMALIZACIÓN IDENTICA AL ENTRENAMIENTO (-0.5)
         for (int idx : ramImportant) {
-            state.push_back(static_cast<double>(RAM.get(idx)) / 255.0);
+            state.push_back((static_cast<double>(RAM.get(idx)) / 255.0) - 0.5);
         }
 
         // B. El agente piensa
         std::vector<double> output = agent.predict(state);
 
-        // C. Decidir acción (el valor más alto gana)
+        // C. Decidir acción usando NUESTRO vector reducido
         int actionIdx = std::distance(output.begin(), std::max_element(output.begin(), output.end()));
-        Action action = ale.getLegalActionSet()[actionIdx];
-
-        // D. Actuar
-        totalReward += ale.act(action);
+        
+        // Protección de rango (aunque la red debe tener el tamaño correcto)
+        if(actionIdx >= 0 && actionIdx < legal_actions.size()) {
+            Action action = legal_actions[actionIdx];
+            totalReward += ale.act(action);
+        } else {
+            // Fallback por si acaso cargaste un modelo antiguo con más salidas
+            ale.act(PLAYER_A_NOOP);
+        }
     }
 
     std::cout << "GAME OVER. Puntuación final: " << totalReward << std::endl;

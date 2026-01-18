@@ -90,38 +90,61 @@ Individual Individual::crossover(const Individual& other, double mutationRate) c
     if (topology_ != other.topology_) {
         throw runtime_error("Crossover requiere misma arquitectura");
     }
+    
     auto& gen = getRandomEngine();
     uniform_real_distribution<> prob(0.0, 1.0);
-    normal_distribution<> mutation(0.0, 0.5);
+    normal_distribution<> mutation(0.0, 0.3);  // Mutación más suave
+    
     VecWeights childWeights;
     vector<vector<double>> childBiases;
+    
     for (size_t layer = 0; layer < weights_.size(); ++layer) {
         vector<vector<double>> layerWeights(weights_[layer].size());
         vector<double> layerBiases(biases_[layer].size());
+        
         for (size_t j = 0; j < weights_[layer].size(); ++j) {
             layerWeights[j].resize(weights_[layer][j].size());
+            
             for (size_t k = 0; k < weights_[layer][j].size(); ++k) {
-                // Con probabilidad mutationRate, muta el peso; si no, hereda aleatoriamente de uno de los padres
-                if (prob(gen) < mutationRate) {
-                    layerWeights[j][k] = mutation(gen);
+                // 1. HEREDAR de un padre (50/50)
+                double inheritedWeight;
+                if (prob(gen) < 0.5) {
+                    inheritedWeight = weights_[layer][j][k];
                 } else {
-                    layerWeights[j][k] = (prob(gen) < 0.5) ? weights_[layer][j][k] : other.weights_[layer][j][k];
+                    inheritedWeight = other.weights_[layer][j][k];
                 }
+                
+                // 2. MUTAR el peso heredado (no reemplazarlo)
+                if (prob(gen) < mutationRate) {
+                    inheritedWeight += mutation(gen);  // ← Suma una perturbación
+                    inheritedWeight = max(-5.0, min(5.0, inheritedWeight));  // Clip
+                }
+                
+                layerWeights[j][k] = inheritedWeight;
             }
-            // Con probabilidad mutationRate, muta el bias; si no, hereda aleatoriamente de uno de los padres
-            if (prob(gen) < mutationRate) {
-                layerBiases[j] = mutation(gen) * 0.1;
+            
+            // Mismo proceso para bias
+            double inheritedBias;
+            if (prob(gen) < 0.5) {
+                inheritedBias = biases_[layer][j];
             } else {
-                layerBiases[j] = (prob(gen) < 0.5) ? biases_[layer][j] : other.biases_[layer][j];
+                inheritedBias = other.biases_[layer][j];
             }
+            
+            if (prob(gen) < mutationRate) {
+                inheritedBias += mutation(gen) * 0.1;
+                inheritedBias = max(-2.0, min(2.0, inheritedBias));
+            }
+            
+            layerBiases[j] = inheritedBias;
         }
+        
         childWeights.push_back(layerWeights);
         childBiases.push_back(layerBiases);
     }
-    // Devuelve un nuevo individuo con la arquitectura y pesos/biases resultantes
+    
     return Individual(topology_, childWeights, childBiases, activation_);
 }
-
 // Cruza dos individuos permitiendo mutación de arquitectura y pesos (neuroevolución)
 Individual Individual::crossoverNeuroevolution(const Individual& other, double mutationRate, double archMutationRate) const {
     auto& gen = getRandomEngine();
@@ -387,8 +410,8 @@ vector<double> Individual::forwardPass(const vector<double>& input) const {
             bool isLastLayer = (layer == weights_.size() - 1);
             // Si es la última capa, aplica sigmoide; si no, la función de activación seleccionada
             if (isLastLayer) {
-                output[j] = 1.0 / (1.0 + exp(-sum));
-                //output[j]=sum;
+                //output[j] = 1.0 / (1.0 + exp(-sum));
+                output[j]=sum;
             } else {
                 output[j] = ActivationFunctions::apply(sum, activation_);
             }
