@@ -429,11 +429,11 @@ int main(int argc, char** argv) {
             else if (dataset == "mnist") dataPath = "data/MNIST/train.csv";
         }
         if (modelPath.empty()) {
-            if (dataset == "atari") modelPath = "models/assault_perceptron.txt";
-            else if (dataset == "iris") modelPath = "models/iris_perceptron.txt";
-            else if (dataset == "cancer") modelPath = "models/cancer_perceptron.txt";
-            else if (dataset == "wine") modelPath = "models/wine_perceptron.txt";
-            else if (dataset == "mnist") modelPath = "models/mnist_perceptron.txt";
+            if (dataset == "atari") modelPath = "models/perceptron/assault_perceptron.txt";
+            else if (dataset == "iris") modelPath = "models/perceptron/iris_perceptron.txt";
+            else if (dataset == "cancer") modelPath = "models/perceptron/cancer_perceptron.txt";
+            else if (dataset == "wine") modelPath = "models/perceptron/wine_perceptron.txt";
+            else if (dataset == "mnist") modelPath = "models/perceptron/mnist_perceptron.txt";
         }
 
         if (trainSplit < 0 || valSplit < 0 || trainSplit + valSplit > 1.0) {
