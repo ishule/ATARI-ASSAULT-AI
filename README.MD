@@ -126,20 +126,21 @@ make TestAgentGA
     ```
     Consulta la función `usage` para ver todos los parámetros disponibles.
 
-    - **AgentGA**: Entrena un agente que utiliza el modelo generado por el algoritmo genético sobre la ROM de Atari, puedes configurar en este mismo archivo la config y cambiar para que solo se entrene con una topología fija (actualmente es pura neuroevolución), también se puede cambiar población, ratio de mutación entre muchas cosas más.
+- **AgentGA**: Entrena un agente que utiliza el modelo generado por el algoritmo genético sobre la ROM de Atari, puedes configurar en este mismo archivo la config y cambiar para que solo se entrene con una topología fija (actualmente es pura neuroevolución), también se puede cambiar población, ratio de mutación entre muchas cosas más.
     ```bash
     make AgentGA
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
     ./bin/AgentGA supported/assault.bin
     ```
-
 
 - **TestAgentGA**: Prueba y evalúa agentes entrenados en AgentGA.
     ```bash
     make TestAgentGA
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
     ./bin/TestAgentGA
     ```
     Para cambiar el modelo a cargar, edita `src/Main/TestAgentGA.cpp` y modifica la ruta del modelo (por ejemplo, `models/ga/best_individual.txt`) dentro del propio código.
 
-
 #### 6 Nota importante
 - Los modelos resultantes se almacenan en `models/` y los logs/resultados en `results/`.
+- Asegúrate de tener instaladas las dependencias de SDL necesarias para ejecutar los binarios que utilizan la librería `libale.so`.
