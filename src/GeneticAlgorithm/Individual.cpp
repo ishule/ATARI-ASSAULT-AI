@@ -410,7 +410,8 @@ vector<double> Individual::forwardPass(const vector<double>& input) const {
             bool isLastLayer = (layer == weights_.size() - 1);
             // Si es la última capa, aplica sigmoide; si no, la función de activación seleccionada
             if (isLastLayer) {
-                //output[j] = 1.0 / (1.0 + exp(-sum));
+                //ActivationFunctions::apply(sum, ActivationType::SIGMOID);
+                //ActivationFunctions::apply(sum, ActivationType::SOFTMAX);
                 output[j]=sum;
             } else {
                 output[j] = ActivationFunctions::apply(sum, activation_);
