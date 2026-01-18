@@ -1,0 +1,65 @@
+
+
+================================================
+DATASET: mnist
+Train: 3500 | Val: 750 | Test: 750
+Input: 784 | Output: 10
+================================================
+
+===== FASE 1: Forward Propagation (sin entrenar) =====
+
+Exp 1 | 784-128-10- | Forward Only (pesos aleatorios)
+  Train: 46.13% | Val: 46.20% | Test: 47.16%
+
+
+===== FASE 2: Backpropagation =====
+
+Exp 2 | 784-128-10- | Backpropagation
+  Train: 98.39% | Val: 97.85% | Test: 97.97%
+
+Exp 3 | 784-256-128-10- | Backpropagation
+  Train: 98.83% | Val: 98.23% | Test: 98.27%
+
+Exp 4 | 784-512-256-10- | Backpropagation
+  Train: 98.98% | Val: 98.27% | Test: 98.44%
+
+
+===== FASE 3: Regularización (Dropout) =====
+
+Exp 5 | Dropout=0.30
+  Train: 98.41% | Val: 98.00% | Test: 98.20%
+
+Exp 6 | Dropout=0.50
+  Train: 97.58% | Val: 97.45% | Test: 97.29%
+
+
+===== FASE 4: Regularización (L2) =====
+
+Exp 7 | L2 lambda=0.01
+  Train: 98.56% | Val: 98.00% | Test: 98.20%
+
+Exp 8 | L2 lambda=0.10
+  Train: 94.79% | Val: 94.49% | Test: 94.69%
+
+
+===== FASE 5: Early Stopping =====
+
+Exp 9 | Early Stopping (stopped at epoch 143)
+  Train: 99.69% | Val: 98.33% | Test: 98.56%
+
+Exp 10 | Early Stopping (stopped at epoch 68)
+  Train: 99.86% | Val: 98.51% | Test: 98.55%
+
+
+========================================
+MEJOR MODELO PARA mnist
+========================================
+Experimento: 9
+Arquitectura: 784-128-10
+Activación: RELU
+Fase: earlystop
+Archivo: models/mlp/mnist_exp9_784-128-10_RELU_earlystop.txt
+Train Accuracy: 99.69%
+Val Accuracy: 98.33%
+Test Accuracy: 98.56%
+
