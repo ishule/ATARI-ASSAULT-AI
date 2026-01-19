@@ -37,11 +37,12 @@ RUN_PERCEPTRON_EXE = $(BIN_DIR)/RunPerceptron
 RUN_GA_EXE = $(BIN_DIR)/RunGA
 AGENT_GA_EXE = $(BIN_DIR)/AgentGA
 AGENT_PERCEPTRON_EXE = $(BIN_DIR)/AgentPerceptron
+AGENT_MLP_EXE = $(BIN_DIR)/AgentMLP
 TEST_AGENT_GA_EXE = $(BIN_DIR)/TestAgentGA
 TEST_LOGIC_GATES_EXE = $(BIN_DIR)/TestLogicGates
 
 # Regla por defecto: compilar todos los ejecutables
-all: $(AGENT_MANUAL_EXE) $(RUN_MLP_EXE) $(RUN_PERCEPTRON_EXE) $(RUN_GA_EXE) $(AGENT_PERCEPTRON_EXE) $(AGENT_GA_EXE) $(TEST_AGENT_GA_EXE) $(TEST_LOGIC_GATES_EXE)
+all: $(AGENT_MANUAL_EXE) $(RUN_MLP_EXE) $(RUN_PERCEPTRON_EXE) $(RUN_GA_EXE) $(AGENT_PERCEPTRON_EXE) $(AGENT_MLP_EXE) $(AGENT_GA_EXE) $(TEST_AGENT_GA_EXE) $(TEST_LOGIC_GATES_EXE)
 
 # Regla para compilar AgentManual
 $(AGENT_MANUAL_EXE): $(AGENT_MANUAL_SRCS)
@@ -72,6 +73,11 @@ $(AGENT_GA_EXE): $(AGENT_GA_SRCS)
 $(AGENT_PERCEPTRON_EXE): $(AGENT_PERCEPTRON_SRCS)
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+# Regla para compilar AgentMLPAuto (genera bin/AgentMLPAuto)
+$(AGENT_MLP_EXE): $(MAIN_DIR)/AgentMLPAuto.cpp $(SRC_DIR)/MLP.cpp $(SRC_DIR)/ActivationFunctions.cpp
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -Iinclude -Ilib/ale/src $^ -o $@ $(LDFLAGS)
 
 # Regla para compilar TestAgentGA
 $(TEST_AGENT_GA_EXE): $(TEST_AGENT_GA_SRCS)
@@ -108,9 +114,7 @@ TrainMLPAtari: src/Main/TrainMLPAtari.cpp src/MLP.cpp src/ActivationFunctions.cp
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -Iinclude $^ -o bin/TrainMLPAtari
 
-AgentMLPAuto: src/Main/AgentMLPAuto.cpp src/MLP.cpp src/ActivationFunctions.cpp
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -Iinclude -Ilib/ale/src $^ -o bin/AgentMLPAuto -Llib/ale -lale -lSDL
+AgentMLP: $(AGENT_MLP_EXE)
 
 # Asegurar que los objetivos no colisionen con archivos del sistema
 .PHONY: all clean AgentManual RunMLP RunPerceptron TrainMLPAtari AgentMLPAuto RunGA AgentPerceptron AgentGA TestAgentGA TestLogicGates
