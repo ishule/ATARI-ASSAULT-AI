@@ -1,6 +1,6 @@
 # Instrucciones para Compilar y Ejecutar
 ## IMPORTANTE:
-- Se debe tener instalada la librería SLD y cmake
+- Se debe tener instalada la librería SDL y cmake
 - Además, antes de hacer maje se debe hacer:
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
