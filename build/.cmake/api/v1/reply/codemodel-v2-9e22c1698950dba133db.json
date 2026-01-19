@@ -1,0 +1,115 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-82951670d64355c37717.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ale",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ale-bin::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ale-bin-Debug-e30243b256731af032e1.json",
+					"name" : "ale-bin",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ale-c-lib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ale-c-lib-Debug-891bd2c5ae4ff1e4c0ca.json",
+					"name" : "ale-c-lib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ale-lib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ale-lib-Debug-e1677a1448d0baef9640.json",
+					"name" : "ale-lib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fifoInterfaceExample::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fifoInterfaceExample-Debug-6b1fe7490a0e002fafdd.json",
+					"name" : "fifoInterfaceExample",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sharedLibraryInterfaceExample::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sharedLibraryInterfaceExample-Debug-4ff774fc19f346082399.json",
+					"name" : "sharedLibraryInterfaceExample",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sharedLibraryInterfaceWithModesExample::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sharedLibraryInterfaceWithModesExample-Debug-9b9131861923cd4b6110.json",
+					"name" : "sharedLibraryInterfaceWithModesExample",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-5b1fd570b9732bae4c5f.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/build",
+		"source" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}
