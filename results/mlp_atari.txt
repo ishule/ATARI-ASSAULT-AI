@@ -61,3 +61,33 @@ Train Accuracy: 95.14%
 Val Accuracy: 94.87%
 Test Accuracy: 94.52%
 
+
+
+================================================
+DATASET: atari
+Train: 42860 | Val: 9184 | Test: 9185
+Input: 80 | Output: 3
+================================================
+
+
+===== FASE 5: Early Stopping =====
+
+Exp 1 | Early Stopping (stopped at epoch 147)
+  Train: 96.4761% | Val: 96.1346% | Test: 96.1604%
+
+Exp 2 | Early Stopping (stopped at epoch 149)
+  Train: 97.4864% | Val: 97.1073% | Test: 97.1149%
+
+
+========================================
+MEJOR MODELO PARA atari
+========================================
+Experimento: 2
+Arquitectura: 80-256-128-3
+Activación: RELU
+Fase: earlystop
+Archivo: models/mlp/atari_exp2_80-256-128-3_RELU_earlystop.txt
+Train Accuracy: 97.49%
+Val Accuracy: 97.11%
+Test Accuracy: 97.11%
+

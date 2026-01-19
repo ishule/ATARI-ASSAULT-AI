@@ -508,21 +508,51 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
 
     std::cout << "  → Total clases válidas: " << validClasses.size() << "\n";
 
-    // Paso 6: Submuestrear cada clase a 'targetSize' (o mantener si es menor)
+    // Paso 6: Generar dataset balanceado (Undersampling + Oversampling)
     MatDouble_t X_balanced, Y_balanced;
     std::mt19937 g(std::random_device{}());
 
     for (const auto& action : validClasses) {
         auto indices = classIndices[action];  // Copia
-        std::shuffle(indices.begin(), indices.end(), g);
+        std::shuffle(indices.begin(), indices.end(), g); // Mezclar para undersampling aleatorio
 
-        // Tomar hasta 'targetSize' muestras (o todas si son menos)
-        size_t numToTake = std::min(targetSize, indices.size());
+        std::string name = getActionName(action);
 
-        for (size_t i = 0; i < numToTake; ++i) {
-            size_t idx = indices[i];
-            X_balanced.push_back(X_filtered[idx]);
-            Y_balanced.push_back(Y_filtered[idx]);
+        // --- LÓGICA MODIFICADA AQUÍ ---
+        
+        if (name == "LEFTFIRE" || name == "RIGHTFIRE") {
+            // Caso 1: Disparo lateral -> Multiplicar x20 (Oversampling agresivo)
+            int multiplicador = 20;
+            std::cout << "    -> Aplicando Oversampling x" << multiplicador << " a " << name << "\n";
+            
+            for (int k = 0; k < multiplicador; ++k) {
+                for (size_t idx : indices) {
+                    X_balanced.push_back(X_filtered[idx]);
+                    Y_balanced.push_back(Y_filtered[idx]);
+                }
+            }
+        } 
+        else if (name == "FIRE") {
+            // Caso 2: Disparo normal -> Multiplicar x2 (Oversampling moderado)
+            int multiplicador = 2;
+            std::cout << "    -> Aplicando Oversampling x" << multiplicador << " a " << name << "\n";
+
+            for (int k = 0; k < multiplicador; ++k) {
+                for (size_t idx : indices) {
+                    X_balanced.push_back(X_filtered[idx]);
+                    Y_balanced.push_back(Y_filtered[idx]);
+                }
+            }
+        } 
+        else {
+            // Caso 3: Resto (NOOP, LEFT, RIGHT) -> Undersampling (Recortar a targetSize)
+            size_t numToTake = std::min(targetSize, indices.size());
+            
+            for (size_t i = 0; i < numToTake; ++i) {
+                size_t idx = indices[i];
+                X_balanced.push_back(X_filtered[idx]);
+                Y_balanced.push_back(Y_filtered[idx]);
+            }
         }
     }
 
@@ -570,7 +600,7 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
 // Carga dataset Atari Assault desde CSV
 // Lee el CSV, normaliza features de RAM a [0,1], aplica balanceo y split
 static Dataset loadAtari(const std::string& path, double trainRatio, double valRatio) {
-    std::cout << "Cargando Atari Assault...\n";
+    std::cout << "Cargando Atari Assault desde " + path + "...\n";
 
     std::ifstream file(path);
     if (!file) throw std::runtime_error("No se pudo abrir " + path);
@@ -723,223 +753,227 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
     int expNum = 0;
     BestModel bestModel;
 
-    // Fase 1
-    results << "===== FASE 1: Forward Propagation (sin entrenar) =====\n\n";
+    // // Fase 1
+    // results << "===== FASE 1: Forward Propagation (sin entrenar) =====\n\n";
 
-    // Solo probar 1 arquitectura para ver pesos aleatorios
-    {
-        expNum++;
-        auto& arch = architectures[0];  // Arquitectura pequeña
+    // // Solo probar 1 arquitectura para ver pesos aleatorios
+    // {
+    //     expNum++;
+    //     auto& arch = architectures[0];  // Arquitectura pequeña
 
-        std::cout << "\n[" << expNum << "] Forward Only: ";
-        for (int l : arch) std::cout << l << " ";
-        std::cout << "\n";
+    //     std::cout << "\n[" << expNum << "] Forward Only: ";
+    //     for (int l : arch) std::cout << l << " ";
+    //     std::cout << "\n";
 
-        MLPConfig cfg;
-        cfg.layerSizes = arch;
-        cfg.activation = activation;
-        cfg.learningRate = 0.01;
-        cfg.maxEpochs = 0;
-        cfg.verbose = false;
+    //     MLPConfig cfg;
+    //     cfg.layerSizes = arch;
+    //     cfg.activation = activation;
+    //     cfg.learningRate = 0.01;
+    //     cfg.maxEpochs = 0;
+    //     cfg.verbose = false;
 
-        MLP* model = new MLP(cfg);
+    //     MLP* model = new MLP(cfg);
 
-        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+    //     double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+    //     double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+    //     double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
 
-        // std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
-        // model->save(currentFilename);
-        // std::cout << "  Modelo guardado: " << currentFilename << "\n";
-
-
-        if (testAcc > bestModel.testAcc) {
-            if (bestModel.model) delete bestModel.model;
-            bestModel.model = model;
-            bestModel.trainAcc = trainAcc;
-            bestModel.valAcc = valAcc;
-            bestModel.testAcc = testAcc;
-            bestModel.expNum = expNum;
-            bestModel.architecture = arch;
-            bestModel.activation = actName;
-            bestModel.phase = "forward";
-            bestModel.filename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
-        } else {
-            delete model;
-        }
-
-        results << "Exp " << expNum << " | ";
-        for (int l : arch) results << l << "-";
-        results << " | Forward Only (pesos aleatorios)\n";
-        results << "  Train: " << std::fixed << std::setprecision(2) << trainAcc << "% | ";
-        results << "Val: " << valAcc << "% | ";
-        results << "Test: " << testAcc << "%\n\n";
-    }
-
-    // Fase 2
-    results << "\n===== FASE 2: Backpropagation =====\n\n";
-
-    for (auto& arch : architectures) {
-        expNum++;
-
-        std::cout << "\n[" << expNum << "] Training: ";
-        for (int l : arch) std::cout << l << " ";
-        std::cout << "\n";
-
-        MLPConfig cfg;
-        cfg.layerSizes = arch;
-        cfg.activation = activation;
-        cfg.learningRate = 0.01;
-        cfg.maxEpochs = maxEpochs;
-        cfg.batchSize = 32;
-        cfg.verbose = true;
-        cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
-
-        MLP* model = new MLP(cfg);
-        model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
-
-        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+    //     std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
+    //     model->save(currentFilename);
+    //     std::cout << "  Modelo guardado: " << currentFilename << "\n";
 
 
-        // std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
-        // model->save(currentFilename);
-        // std::cout << "  Modelo guardado: " << currentFilename << "\n";
+    //     if (testAcc > bestModel.testAcc) {
+    //         if (bestModel.model) delete bestModel.model;
+    //         bestModel.model = model;
+    //         bestModel.trainAcc = trainAcc;
+    //         bestModel.valAcc = valAcc;
+    //         bestModel.testAcc = testAcc;
+    //         bestModel.expNum = expNum;
+    //         bestModel.architecture = arch;
+    //         bestModel.activation = actName;
+    //         bestModel.phase = "forward";
+    //         bestModel.filename = generateModelFilename(dataset.name, arch, actName, "forward", expNum);
+    //     } else {
+    //         delete model;
+    //     }
+
+    //     results << "Exp " << expNum << " | ";
+    //     for (int l : arch) results << l << "-";
+    //     results << " | Forward Only (pesos aleatorios)\n";
+    //     results << "  Train: " << std::fixed << std::setprecision(2) << trainAcc << "% | ";
+    //     results << "Val: " << valAcc << "% | ";
+    //     results << "Test: " << testAcc << "%\n\n";
+
+    //     std::cout << "  Results: Train=" << trainAcc << "% Val=" << valAcc
+    //     << "% Test=" << testAcc << "%\n";
+    // }
+
+    
+    // // Fase 2
+    // results << "\n===== FASE 2: Backpropagation =====\n\n";
+
+    // for (auto& arch : architectures) {
+    //     expNum++;
+
+    //     std::cout << "\n[" << expNum << "] Training: ";
+    //     for (int l : arch) std::cout << l << " ";
+    //     std::cout << "\n";
+
+    //     MLPConfig cfg;
+    //     cfg.layerSizes = arch;
+    //     cfg.activation = activation;
+    //     cfg.learningRate = 0.01;
+    //     cfg.maxEpochs = maxEpochs;
+    //     cfg.batchSize = 32;
+    //     cfg.verbose = true;
+    //     cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
+
+    //     MLP* model = new MLP(cfg);
+    //     model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
+
+    //     double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+    //     double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+    //     double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
 
 
-        if (testAcc > bestModel.testAcc) {
-            if (bestModel.model) delete bestModel.model;
-            bestModel.model = model;
-            bestModel.trainAcc = trainAcc;
-            bestModel.valAcc = valAcc;
-            bestModel.testAcc = testAcc;
-            bestModel.expNum = expNum;
-            bestModel.architecture = arch;
-            bestModel.activation = actName;
-            bestModel.phase = "backprop";
-            bestModel.filename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
-        } else {
-            delete model;
-        }
+    //     std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
+    //     model->save(currentFilename);
+    //     std::cout << "  Modelo guardado: " << currentFilename << "\n";
 
-        results << "Exp " << expNum << " | ";
-        for (int l : arch) results << l << "-";
-        results << " | Backpropagation\n";
-        results << "  Train: " << trainAcc << "% | ";
-        results << "Val: " << valAcc << "% | ";
-        results << "Test: " << testAcc << "%\n\n";
 
-        std::cout << "  Results: Train=" << trainAcc << "% Val=" << valAcc
-                  << "% Test=" << testAcc << "%\n";
-    }
+    //     if (testAcc > bestModel.testAcc) {
+    //         if (bestModel.model) delete bestModel.model;
+    //         bestModel.model = model;
+    //         bestModel.trainAcc = trainAcc;
+    //         bestModel.valAcc = valAcc;
+    //         bestModel.testAcc = testAcc;
+    //         bestModel.expNum = expNum;
+    //         bestModel.architecture = arch;
+    //         bestModel.activation = actName;
+    //         bestModel.phase = "backprop";
+    //         bestModel.filename = generateModelFilename(dataset.name, arch, actName, "backprop", expNum);
+    //     } else {
+    //         delete model;
+    //     }
 
-    // Fase 3
-    results << "\n===== FASE 3: Regularización (Dropout) =====\n\n";
+    //     results << "Exp " << expNum << " | ";
+    //     for (int l : arch) results << l << "-";
+    //     results << " | Backpropagation\n";
+    //     results << "  Train: " << trainAcc << "% | ";
+    //     results << "Val: " << valAcc << "% | ";
+    //     results << "Test: " << testAcc << "%\n\n";
 
-    auto& arch_reg = architectures[1];  // Arquitectura mediana
-    std::vector<double> dropoutRates = {0.3, 0.5};
+    //     std::cout << "  Results: Train=" << trainAcc << "% Val=" << valAcc
+    //               << "% Test=" << testAcc << "%\n";
+    // }
 
-    for (auto& rate : dropoutRates) {
-        expNum++;
+    // // Fase 3
+    // results << "\n===== FASE 3: Regularización (Dropout) =====\n\n";
 
-        std::cout << "\n[" << expNum << "] Dropout=" << rate << ": ";
-        for (int l : arch_reg) std::cout << l << " ";
-        std::cout << "\n";
+    // auto& arch_reg = architectures[1];  // Arquitectura mediana
+    // std::vector<double> dropoutRates = {0.3, 0.5};
 
-        MLPConfig cfg;
-        cfg.layerSizes = arch_reg;
-        cfg.activation = activation;
-        cfg.learningRate = 0.01;
-        cfg.maxEpochs = maxEpochs;
-        cfg.batchSize = 32;
-        cfg.useDropout = true;
-        cfg.dropoutRate = rate;
-        cfg.verbose = true;
-        cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
+    // for (auto& rate : dropoutRates) {
+    //     expNum++;
 
-        MLP* model = new MLP(cfg);
-        model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
+    //     std::cout << "\n[" << expNum << "] Dropout=" << rate << ": ";
+    //     for (int l : arch_reg) std::cout << l << " ";
+    //     std::cout << "\n";
 
-        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+    //     MLPConfig cfg;
+    //     cfg.layerSizes = arch_reg;
+    //     cfg.activation = activation;
+    //     cfg.learningRate = 0.01;
+    //     cfg.maxEpochs = maxEpochs;
+    //     cfg.batchSize = 32;
+    //     cfg.useDropout = true;
+    //     cfg.dropoutRate = rate;
+    //     cfg.verbose = true;
+    //     cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
 
-        std::stringstream ss;
-        ss << "dropout" << std::fixed << std::setprecision(1) << rate;
+    //     MLP* model = new MLP(cfg);
+    //     model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
 
-        if (testAcc > bestModel.testAcc) {
-            if (bestModel.model) delete bestModel.model;
-            bestModel.model = model;
-            bestModel.trainAcc = trainAcc;
-            bestModel.valAcc = valAcc;
-            bestModel.testAcc = testAcc;
-            bestModel.expNum = expNum;
-            bestModel.architecture = arch_reg;
-            bestModel.activation = actName;
-            bestModel.phase = ss.str();
-            bestModel.filename = generateModelFilename(dataset.name, arch_reg, actName, ss.str(), expNum);
-        } else {
-            delete model;
-        }
+    //     double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+    //     double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+    //     double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
 
-        results << "Exp " << expNum << " | Dropout=" << rate << "\n";
-        results << "  Train: " << trainAcc << "% | ";
-        results << "Val: " << valAcc << "% | ";
-        results << "Test: " << testAcc << "%\n\n";
-    }
+    //     std::stringstream ss;
+    //     ss << "dropout" << std::fixed << std::setprecision(1) << rate;
 
-    // Fase 4
-    results << "\n===== FASE 4: Regularización (L2) =====\n\n";
+    //     if (testAcc > bestModel.testAcc) {
+    //         if (bestModel.model) delete bestModel.model;
+    //         bestModel.model = model;
+    //         bestModel.trainAcc = trainAcc;
+    //         bestModel.valAcc = valAcc;
+    //         bestModel.testAcc = testAcc;
+    //         bestModel.expNum = expNum;
+    //         bestModel.architecture = arch_reg;
+    //         bestModel.activation = actName;
+    //         bestModel.phase = ss.str();
+    //         bestModel.filename = generateModelFilename(dataset.name, arch_reg, actName, ss.str(), expNum);
+    //     } else {
+    //         delete model;
+    //     }
 
-    std::vector<double> l2Lambdas = {0.01, 0.1};
+    //     results << "Exp " << expNum << " | Dropout=" << rate << "\n";
+    //     results << "  Train: " << trainAcc << "% | ";
+    //     results << "Val: " << valAcc << "% | ";
+    //     results << "Test: " << testAcc << "%\n\n";
+    // }
 
-    for (auto& lambda : l2Lambdas) {
-        expNum++;
+    // // Fase 4
+    // results << "\n===== FASE 4: Regularización (L2) =====\n\n";
 
-        std::cout << "\n[" << expNum << "] L2 lambda=" << lambda << "\n";
+    // std::vector<double> l2Lambdas = {0.01, 0.1};
 
-        MLPConfig cfg;
-        cfg.layerSizes = arch_reg;
-        cfg.activation = activation;
-        cfg.learningRate = 0.01;
-        cfg.maxEpochs = maxEpochs;
-        cfg.batchSize = 32;
-        cfg.useL2 = true;
-        cfg.l2Lambda = lambda;
-        cfg.verbose = true;
-        cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
+    // for (auto& lambda : l2Lambdas) {
+    //     expNum++;
 
-        MLP* model = new MLP(cfg);
-        model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
+    //     std::cout << "\n[" << expNum << "] L2 lambda=" << lambda << "\n";
 
-        double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
-        double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
-        double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+    //     MLPConfig cfg;
+    //     cfg.layerSizes = arch_reg;
+    //     cfg.activation = activation;
+    //     cfg.learningRate = 0.01;
+    //     cfg.maxEpochs = maxEpochs;
+    //     cfg.batchSize = 32;
+    //     cfg.useL2 = true;
+    //     cfg.l2Lambda = lambda;
+    //     cfg.verbose = true;
+    //     cfg.printEvery = (datasetName == "mnist") ? 5 : 10;
 
-        std::stringstream ss;
-        ss << "l2_" << lambda;
+    //     MLP* model = new MLP(cfg);
+    //     model->train(dataset.Xtrain, dataset.Ytrain, dataset.Xval, dataset.Yval);
 
-        if (testAcc > bestModel.testAcc) {
-            if (bestModel.model) delete bestModel.model;
-            bestModel.model = model;
-            bestModel.trainAcc = trainAcc;
-            bestModel.valAcc = valAcc;
-            bestModel.testAcc = testAcc;
-            bestModel.expNum = expNum;
-            bestModel.architecture = arch_reg;
-            bestModel.activation = actName;
-            bestModel.phase = ss.str();
-            bestModel.filename = generateModelFilename(dataset.name, arch_reg, actName, ss.str(), expNum);
-        } else {
-            delete model;
-        }
+    //     double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
+    //     double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
+    //     double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
 
-        results << "Exp " << expNum << " | L2 lambda=" << lambda << "\n";
-        results << "  Train: " << trainAcc << "% | ";
-        results << "Val: " << valAcc << "% | ";
-        results << "Test: " << testAcc << "%\n\n";
-    }
+    //     std::stringstream ss;
+    //     ss << "l2_" << lambda;
+
+    //     if (testAcc > bestModel.testAcc) {
+    //         if (bestModel.model) delete bestModel.model;
+    //         bestModel.model = model;
+    //         bestModel.trainAcc = trainAcc;
+    //         bestModel.valAcc = valAcc;
+    //         bestModel.testAcc = testAcc;
+    //         bestModel.expNum = expNum;
+    //         bestModel.architecture = arch_reg;
+    //         bestModel.activation = actName;
+    //         bestModel.phase = ss.str();
+    //         bestModel.filename = generateModelFilename(dataset.name, arch_reg, actName, ss.str(), expNum);
+    //     } else {
+    //         delete model;
+    //     }
+
+    //     results << "Exp " << expNum << " | L2 lambda=" << lambda << "\n";
+    //     results << "  Train: " << trainAcc << "% | ";
+    //     results << "Val: " << valAcc << "% | ";
+    //     results << "Test: " << testAcc << "%\n\n";
+    // }
 
     // Fase 5
     results << "\n===== FASE 5: Early Stopping =====\n\n";
@@ -959,6 +993,8 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         cfg.maxEpochs = 150;  // Más épocas para ver el early stopping
         cfg.batchSize = 32;
         cfg.useEarlyStopping = true;
+        cfg.useDropout = true;
+        cfg.dropoutRate = 0.3;
         cfg.patience = 15;
         cfg.minDelta = 0.001;
         cfg.verbose = true;
