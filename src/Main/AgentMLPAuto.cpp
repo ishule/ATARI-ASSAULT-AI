@@ -114,7 +114,7 @@ enum ActionIndex {
     ACTION_RIGHTFIRE = 5
 };
 
-Action mlpOutputToAction(const vector<double>& output) {
+Action mlpOutputToAction_v0(const vector<double>& output) {
     double fire = output[0];
     double left = output[1];
     double right = output[2];
@@ -146,6 +146,188 @@ Action mlpOutputToAction(const vector<double>& output) {
     }
     
     return movement;  // LEFT, RIGHT o NOOP
+}
+
+
+Action mlpOutputToAction_v1(const vector<double>& output) {
+    double fire = output[0];
+    double left = output[1];
+    double right = output[2];
+    
+    // 1. Decisión de disparo con umbral dinámico
+    bool should_fire = (fire > 0.3); // Umbral más bajo para disparar más
+    
+    // 2. Movimiento basado en máximo directo (sin diferencia)
+    Action movement = PLAYER_A_NOOP;
+    
+    double max_move = max(left, right);
+    if (max_move > 0.35) { // Umbral más bajo para moverse más
+        movement = (left > right) ? PLAYER_A_LEFT : PLAYER_A_RIGHT;
+    }
+    
+    // 3. Combinar
+    if (should_fire) {
+        if (movement == PLAYER_A_LEFT) return PLAYER_A_LEFTFIRE;
+        if (movement == PLAYER_A_RIGHT) return PLAYER_A_RIGHTFIRE;
+        return PLAYER_A_UPFIRE;
+    }
+    
+    return movement;
+}
+
+
+Action mlpOutputToAction_v2(const vector<double>& output) {
+    // Mapeo directo: la acción con mayor activación gana
+    vector<pair<double, Action>> acciones = {
+        {output[0] * 1.2, PLAYER_A_UPFIRE},      // Bonus al disparo
+        {output[1], PLAYER_A_LEFT},
+        {output[2], PLAYER_A_RIGHT},
+        {output[1] * output[0], PLAYER_A_LEFTFIRE},   // Combinación
+        {output[2] * output[0], PLAYER_A_RIGHTFIRE},  // Combinación
+        {0.1, PLAYER_A_NOOP}  // Baseline para NOOP
+    };
+    
+    // Seleccionar la acción con mayor valor
+    auto max_action = max_element(acciones.begin(), acciones.end());
+    return max_action->second;
+}
+
+Action mlpOutputToAction_v3(const vector<double>& output, int gameScore) {
+    double fire = output[0];
+    double left = output[1];
+    double right = output[2];
+    
+    // Ajustar agresividad según el score (inicio más agresivo)
+    double fire_threshold = (gameScore < 500) ? 0.25 : 0.4;
+    double move_threshold = (gameScore < 500) ? 0.3 : 0.5;
+    
+    bool should_fire = (fire > fire_threshold);
+    
+    Action movement = PLAYER_A_NOOP;
+    if (left > move_threshold || right > move_threshold) {
+        movement = (left > right) ? PLAYER_A_LEFT : PLAYER_A_RIGHT;
+    }
+    
+    if (should_fire) {
+        if (movement == PLAYER_A_LEFT) return PLAYER_A_LEFTFIRE;
+        if (movement == PLAYER_A_RIGHT) return PLAYER_A_RIGHTFIRE;
+        return PLAYER_A_UPFIRE;
+    }
+    
+    return movement;
+}
+
+// v4: FIRE=0.35, MOVE=0.45, diff=0.08
+// v5: FIRE=0.38, MOVE=0.48, diff=0.12
+// v6: FIRE=0.42, MOVE=0.52, diff=0.09
+
+Action mlpOutputToAction_v4_v5_v6(const vector<double>& output) {
+    double fire = output[0];
+    double left = output[1];
+    double right = output[2];
+    
+    // VARIANTE 1: Umbrales ligeramente más bajos
+    const double FIRE_THRESHOLD = 0.42;    // antes 0.4
+    const double MOVE_THRESHOLD = 0.52;    // antes 0.5
+    
+    bool should_fire = (fire > FIRE_THRESHOLD);
+    
+    double move_diff = abs(left - right);
+    Action movement = PLAYER_A_NOOP;
+    
+    if (move_diff > 0.09) {  // antes 0.1, más sensible
+        if (left > right && left > MOVE_THRESHOLD) {
+            movement = PLAYER_A_LEFT;
+        } else if (right > left && right > MOVE_THRESHOLD) {
+            movement = PLAYER_A_RIGHT;
+        }
+    }
+    
+    if (should_fire) {
+        if (movement == PLAYER_A_LEFT) return PLAYER_A_LEFTFIRE;
+        if (movement == PLAYER_A_RIGHT) return PLAYER_A_RIGHTFIRE;
+        return PLAYER_A_UPFIRE;
+    }
+    
+    return movement;
+}
+
+Action mlpOutputToAction_v7(const vector<double>& output) {
+    double fire = output[0];
+    double left = output[1];
+    double right = output[2];
+    
+    // Calcular "confianza" de cada acción
+    double fire_confidence = fire;
+    double left_confidence = left * (1.0 - right);  // Penaliza si right también es alto
+    double right_confidence = right * (1.0 - left);
+    
+    // Decisión de disparo más conservadora
+    bool should_fire = (fire_confidence > 0.42);
+    
+    // Movimiento por confianza relativa
+    Action movement = PLAYER_A_NOOP;
+    double max_move_conf = max(left_confidence, right_confidence);
+    
+    if (max_move_conf > 0.4) {
+        movement = (left_confidence > right_confidence) ? PLAYER_A_LEFT : PLAYER_A_RIGHT;
+    }
+    
+    if (should_fire) {
+        if (movement == PLAYER_A_LEFT) return PLAYER_A_LEFTFIRE;
+        if (movement == PLAYER_A_RIGHT) return PLAYER_A_RIGHTFIRE;
+        return PLAYER_A_UPFIRE;
+    }
+    
+    return movement;
+}
+
+// Variable global o miembro de clase
+static Action last_action = PLAYER_A_NOOP;
+static int action_persistence = 0;
+
+Action mlpOutputToAction(const vector<double>& output) {
+    double fire = output[0];
+    double left = output[1];
+    double right = output[2];
+    
+    const double FIRE_THRESHOLD = 0.4;
+    const double MOVE_THRESHOLD = 0.5;
+    
+    bool should_fire = (fire > FIRE_THRESHOLD);
+    
+    Action movement = PLAYER_A_NOOP;
+    double move_diff = abs(left - right);
+    
+    if (move_diff > 0.1) {
+        if (left > right && left > MOVE_THRESHOLD) {
+            movement = PLAYER_A_LEFT;
+        } else if (right > left && right > MOVE_THRESHOLD) {
+            movement = PLAYER_A_RIGHT;
+        }
+    }
+    
+    Action new_action = movement;
+    if (should_fire) {
+        if (movement == PLAYER_A_LEFT) new_action = PLAYER_A_LEFTFIRE;
+        else if (movement == PLAYER_A_RIGHT) new_action = PLAYER_A_RIGHTFIRE;
+        else new_action = PLAYER_A_UPFIRE;
+    }
+    
+    // Mantener acción anterior si es similar (reduce "nerviosismo")
+    if (new_action == last_action) {
+        action_persistence++;
+    } else {
+        if (action_persistence < 3) {  // Mínimo 3 frames antes de cambiar
+            new_action = last_action;
+            action_persistence++;
+        } else {
+            action_persistence = 0;
+        }
+    }
+    
+    last_action = new_action;
+    return new_action;
 }
 
 int main(int argc, char** argv) {
@@ -184,7 +366,7 @@ int main(int argc, char** argv) {
     cout << "=== JUGANDO CON MLP ENTRENADO ===\n\n";
     
     int episode = 0;
-    const int MAX_EPISODES = 10;
+    const int MAX_EPISODES = 50;
     int sumReward = 0;
 
     
@@ -195,7 +377,7 @@ int main(int argc, char** argv) {
 
         cout << "Test " << (episode + 1) << "/" << MAX_EPISODES << " - ";
         
-        while (!ale.game_over() && steps < 10000) {
+        while (!ale.game_over() && steps < 5000) {
             // 1. Extraer features de RAM
             vector<double> features = extractFeatures(ale);
             

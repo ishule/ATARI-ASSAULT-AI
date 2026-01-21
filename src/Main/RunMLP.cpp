@@ -483,73 +483,39 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
         throw std::runtime_error("No hay clases válidas después del filtrado");
     }
 
-    // Paso 5: Calcular tamaño objetivo (tercera clase más común)
+    // Paso 5: Calcular tamaño objetivo (CUARTA clase más común)
+    if (validClasses.size() == 1) {
+        std::cout << "\n  → Solo 1 clase válida, no se balancea\n";
+        return;
+    }
+
     std::vector<size_t> sizes;
     for (const auto& action : validClasses) {
         sizes.push_back(classIndices[action].size());
     }
-    std::sort(sizes.begin(), sizes.end(), std::greater<size_t>());  // Ordenar descendente
 
-    // Elegir el tamaño objetivo:
-    // - Si hay >= 3 clases: usar la 3ª más común (percentil ~50%)
-    // - Si hay 2 clases: usar la 2ª (la mínima)
-    // - Si hay 1 clase: no balancear
-    size_t targetSize;
-    if (sizes.size() >= 3) {
-        targetSize = sizes[2];  // Tercera más común
-        std::cout << "\n  → Usando tamaño de la 3ª clase más común: " << targetSize << " muestras\n";
-    } else if (sizes.size() == 2) {
-        targetSize = sizes[1];  // La mínima de las 2
-        std::cout << "\n  → Usando tamaño de la clase minoritaria: " << targetSize << " muestras\n";
-    } else {
-        std::cout << "\n  → Solo 1 clase válida, no se balancea\n";
-        return;  // No balancear si solo hay 1 clase
-    }
-
+    size_t targetSize = *std::min_element(sizes.begin(), sizes.end());
+    std::cout << "\n  → Igualando todas las clases al tamaño de la más pequeña: " << targetSize << " muestras\n";
     std::cout << "  → Total clases válidas: " << validClasses.size() << "\n";
 
-    // Paso 6: Generar dataset balanceado (Undersampling + Oversampling)
+    // Paso 6: Generar dataset balanceado (Equalizar todas las clases a targetSize)
     MatDouble_t X_balanced, Y_balanced;
     std::mt19937 g(std::random_device{}());
-
     for (const auto& action : validClasses) {
-        auto indices = classIndices[action];  // Copia
-        std::shuffle(indices.begin(), indices.end(), g); // Mezclar para undersampling aleatorio
+        auto indices = classIndices[action];  // copia y mezclar
+        std::shuffle(indices.begin(), indices.end(), g);
+        size_t available = indices.size();
 
-        std::string name = getActionName(action);
-
-        // --- LÓGICA MODIFICADA AQUÍ ---
-        
-        if (name == "LEFTFIRE" || name == "RIGHTFIRE") {
-            // Caso 1: Disparo lateral -> Multiplicar x20 (Oversampling agresivo)
-            int multiplicador = 20;
-            std::cout << "    -> Aplicando Oversampling x" << multiplicador << " a " << name << "\n";
-            
-            for (int k = 0; k < multiplicador; ++k) {
-                for (size_t idx : indices) {
-                    X_balanced.push_back(X_filtered[idx]);
-                    Y_balanced.push_back(Y_filtered[idx]);
-                }
+        if (available >= targetSize) {
+            for (size_t i = 0; i < targetSize; ++i) {
+                X_balanced.push_back(X_filtered[indices[i]]);
+                Y_balanced.push_back(Y_filtered[indices[i]]);
             }
-        } 
-        else if (name == "FIRE") {
-            // Caso 2: Disparo normal -> Multiplicar x2 (Oversampling moderado)
-            int multiplicador = 2;
-            std::cout << "    -> Aplicando Oversampling x" << multiplicador << " a " << name << "\n";
-
-            for (int k = 0; k < multiplicador; ++k) {
-                for (size_t idx : indices) {
-                    X_balanced.push_back(X_filtered[idx]);
-                    Y_balanced.push_back(Y_filtered[idx]);
-                }
-            }
-        } 
-        else {
-            // Caso 3: Resto (NOOP, LEFT, RIGHT) -> Undersampling (Recortar a targetSize)
-            size_t numToTake = std::min(targetSize, indices.size());
-            
-            for (size_t i = 0; i < numToTake; ++i) {
-                size_t idx = indices[i];
+        } else {
+            // Oversample con reemplazo hasta targetSize
+            std::uniform_int_distribution<size_t> dist(0, available - 1);
+            for (size_t k = 0; k < targetSize; ++k) {
+                size_t idx = indices[dist(g)];
                 X_balanced.push_back(X_filtered[idx]);
                 Y_balanced.push_back(Y_filtered[idx]);
             }
@@ -588,12 +554,16 @@ static void balanceAtariData(MatDouble_t& X, MatDouble_t& Y, size_t minSamplesPe
 
     size_t originalSize = Y_filtered.size();
     size_t finalSize = Y.size();
-    double reductionPct = 100.0 * (1.0 - (double)finalSize / originalSize);
 
     std::cout << "\n  → Total ANTES: " << originalSize << " muestras\n";
     std::cout << "  → Total DESPUÉS: " << finalSize << " muestras\n";
-    std::cout << "  → Reducción: " << std::fixed << std::setprecision(1)
-              << reductionPct << "%\n";
+    if (finalSize >= originalSize) {
+        double increasePct = 100.0 * (double(finalSize) / originalSize - 1.0);
+        std::cout << "  → Aumento: " << std::fixed << std::setprecision(1) << increasePct << "%\n";
+    } else {
+        double reductionPct = 100.0 * (1.0 - (double)finalSize / originalSize);
+        std::cout << "  → Reducción: " << std::fixed << std::setprecision(1) << reductionPct << "%\n";
+    }
 }
 
 
@@ -902,6 +872,11 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         std::stringstream ss;
         ss << "dropout" << std::fixed << std::setprecision(1) << rate;
 
+
+        std::string currentFilename = generateModelFilename(dataset.name, arch_reg, actName, "dropout", expNum);
+        model->save(currentFilename);
+        std::cout << "  Modelo guardado: " << currentFilename << "\n";
+
         if (testAcc > bestModel.testAcc) {
             if (bestModel.model) delete bestModel.model;
             bestModel.model = model;
@@ -953,6 +928,11 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
 
         std::stringstream ss;
         ss << "l2_" << lambda;
+
+
+        std::string currentFilename = generateModelFilename(dataset.name, arch_reg, actName, "l2", expNum);
+        model->save(currentFilename);
+        std::cout << "  Modelo guardado: " << currentFilename << "\n";
 
         if (testAcc > bestModel.testAcc) {
             if (bestModel.model) delete bestModel.model;
@@ -1006,6 +986,11 @@ void runExperiments(const std::string& datasetName, const std::string& dataPath,
         double trainAcc = model->evaluate(dataset.Xtrain, dataset.Ytrain);
         double valAcc = model->evaluate(dataset.Xval, dataset.Yval);
         double testAcc = model->evaluate(dataset.Xtest, dataset.Ytest);
+
+
+        std::string currentFilename = generateModelFilename(dataset.name, arch, actName, "earlystop", expNum);
+        model->save(currentFilename);
+        std::cout << "  Modelo guardado: " << currentFilename << "\n";
 
         if (testAcc > bestModel.testAcc) {
             if (bestModel.model) delete bestModel.model;
@@ -1121,7 +1106,7 @@ int main(int argc, char** argv) {
         else if (dataset == "cancer") dataPath = "data/cancermama.csv";
         else if (dataset == "wine") dataPath = "data/winequality-red.csv";
         else if (dataset == "mnist") dataPath = "data/MNIST/train_small.csv";
-        else if (dataset == "atari") dataPath = "datasets_juntos.csv";
+        else if (dataset == "atari") dataPath = "data/data_atari/data_aumentado.csv";
     }
 
     if (!fileExists(dataPath)) {
