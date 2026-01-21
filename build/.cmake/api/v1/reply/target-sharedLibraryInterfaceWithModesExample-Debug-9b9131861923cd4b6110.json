@@ -1,0 +1,216 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/doc/examples/ale-sharedLibraryInterfaceWithModesExample"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"link_directories",
+			"target_link_libraries",
+			"add_dependencies",
+			"add_definitions",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 188,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 169,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 191,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 192,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 193,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 14,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 114,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++11 -Wall -Wunused -fPIC -O3 -fomit-frame-pointer -D__STDC_CONSTANT_MACROS -g"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 6,
+					"define" : "HAVE_INTTYPES"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/common"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/controllers"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/emucore"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/emucore/m6502/src"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/emucore/m6502/src/bspf/src"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/environment"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/games"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/games/supported"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/os_dependent"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/external"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale/src/external/TinyMT"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 5,
+			"id" : "ale-lib::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "sharedLibraryInterfaceWithModesExample::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-std=c++11 -Wall -Wunused -fPIC -O3 -fomit-frame-pointer -D__STDC_CONSTANT_MACROS -g",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale",
+				"role" : "libraryPath"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/joderdanie/Desktop/RA/Arcade-Learning-Environment-0.6.1/lib/ale",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lale",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "-lz",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "sharedLibraryInterfaceWithModesExample",
+	"nameOnDisk" : "ale-sharedLibraryInterfaceWithModesExample",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "doc/examples/sharedLibraryInterfaceWithModesExample.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}

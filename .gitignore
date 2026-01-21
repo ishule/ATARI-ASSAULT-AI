@@ -15,22 +15,7 @@ __pycache__/
 *.swo
 *~
 node_modules/
-dist/
-build/
 *.log
 .env
 bin/
 
-# Ignore ALE build artifacts
-lib/ale/build
-lib/ale/*.a
-lib/ale/*dll
-lib/ale/*so
-lib/ale/*dylib
-lib/ale/CMakeFiles/
-lib/ale/CMakeCache.txt
-lib/ale/Makefile
-lib/ale/ale.pc 
-lib/ale/agent 
-lib/ale/cmake_install.cmake
-lib/ale/cmake_uninstall.cmake

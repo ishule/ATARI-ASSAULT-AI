@@ -1,4 +1,11 @@
 # Instrucciones para Compilar y Ejecutar
+## IMPORTANTE:
+- Se debe tener instalada la librería SDL y cmake
+- Además, antes de hacer maje se debe hacer:
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
+```
+- Al hacer make se compilan todos los ejecutables necesarios para el proyecto
 
 ## Recomendación
 Es importante revisar los videos de clase, especialmente el del **24 de noviembre**, para entender el proceso completo.
@@ -66,7 +73,7 @@ Compilamos y ejecutamos el agente perceptrón:
 ```bash
 make AgentPerceptron
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
-/bin/AgentPerceptron models/perceptron/<modelo_perceptron>.txt
+/bin/AgentPerceptron 
 ```
 
 - El primer argumento es la ROM de Atari Assault.
@@ -85,7 +92,7 @@ make RunMLP
 ./bin/RunMLP --dataset <nombre_del_dataset>
 ```
 
-Podemos probar con los datasets: `iris`, `cancer`, `wine` y `atari`.
+Podemos probar con los datasets: `iris`, `cancer`, `wine`, `mnist` y `atari`.
 
 **Función que realiza:** ejecuta experimentos para un dataset determinado, probando varias combinaciones (estructura, dropout, early stop, etc.) y guarda el mejor modelo en `models/mlp`.
 
@@ -96,9 +103,9 @@ Esta función ejecuta el modelo entrenado en Atari de forma visual, analizando l
 
 Compilamos y ejecutamos:
 ```bash
-make AgentMLPAuto
+make AgentMLP
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/ale
-/bin/AgentMLPAuto supported/assault.bin models/mlp/atari_exp2_80-128-64-3_RELU_backprop_vbuena_1.txt
+/bin/AgentMLP supported/assault.bin models/mlp/atari_exp2_80-128-64-3_RELU_backprop_vbuena_1.txt
 ```
 
 - El primer argumento es la ROM de Atari Assault.
